@@ -1,0 +1,390 @@
+% Kiến trúc đồ án Chess-AI Self-play — Báo cáo Nhập môn AI, VLU
+% Compile: tectonic architecture.tex   (tectonic dùng XeLaTeX → fontspec hoạt động)
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+% Font có dấu tiếng Việt đầy đủ (có sẵn trên macOS / qua tectonic font cache)
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}[Scale=0.92]
+
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, decorations.pathreplacing}
+
+\hypersetup{colorlinks=true,linkcolor=teal,urlcolor=blue}
+
+% --- Style chung ---
+\definecolor{cM1}{HTML}{F4B084}
+\definecolor{cM2}{HTML}{B4C7E7}
+\definecolor{cM3}{HTML}{C5E0B4}
+\definecolor{cCore}{HTML}{FFE699}
+\definecolor{cIO}{HTML}{D9D9D9}
+\definecolor{cAnalytics}{HTML}{E6CCFF}
+\definecolor{cArrow}{HTML}{595959}
+
+\tikzset{
+  module/.style={
+    rectangle, rounded corners=3pt, draw=cArrow, line width=0.6pt,
+    minimum width=2.7cm, minimum height=0.85cm, align=center,
+    font=\small, fill=white
+  },
+  m1/.style={module, fill=cM1!60},
+  m2/.style={module, fill=cM2!70},
+  m3/.style={module, fill=cM3!70},
+  core/.style={module, fill=cCore!80},
+  io/.style={module, fill=cIO!80},
+  ana/.style={module, fill=cAnalytics!60},
+  flow/.style={-{Latex[length=2.2mm]}, draw=cArrow, line width=0.6pt},
+  dashflow/.style={-{Latex[length=2.2mm]}, draw=cArrow, line width=0.5pt, dashed},
+  layer/.style={rectangle, draw=cArrow!60, dashed, line width=0.5pt, rounded corners=4pt, inner sep=8pt},
+  label/.style={font=\bfseries\small, text=cArrow},
+}
+
+\title{\textbf{Kiến trúc đồ án Chess-AI Self-play}\\
+\large Minimax + Alpha-Beta + Q-Learning}
+\author{Nguyễn Thành Phong --- Trần An Kỳ\\
+GVHD: ThS. Phan Hồ Viết Trường\\
+Khoa CNTT, Trường ĐH Văn Lang}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Tổng quan}
+
+Đồ án xây dựng 3 mô hình AI cờ vua so sánh trực tiếp với nhau qua self-play.
+Cấu trúc tổng quát gồm 5 tầng (Hình~\ref{fig:overview}):
+
+\begin{enumerate}
+  \item \textbf{Tầng Entry (CLI)}: 3 script chạy bằng tay --- huấn luyện, đánh giá, chơi.
+  \item \textbf{Tầng Agent}: 3 mô hình tương ứng với 3 thuật toán (Mô hình 1 / 2 / 3).
+  \item \textbf{Tầng Search \& Evaluate}: thư viện tìm kiếm và hàm đánh giá vị trí.
+  \item \textbf{Tầng Reinforcement Learning}: Q-table, reward shaping, replay buffer, vòng self-play.
+  \item \textbf{Tầng Analytics}: PGN, ELO, biểu đồ matplotlib phục vụ báo cáo.
+\end{enumerate}
+
+% ============== HÌNH 1: TỔNG QUAN HỆ THỐNG ==============
+\begin{figure}[h!]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[node distance=0.55cm and 0.6cm]
+
+  % Layer 1: Entry scripts
+  \node[io] (train) {\texttt{scripts/train.py}};
+  \node[io, right=of train] (eval) {\texttt{scripts/evaluate.py}};
+  \node[io, right=of eval] (play) {\texttt{scripts/play.py}};
+  \node[io, right=of play] (plot) {\texttt{scripts/plot\_results.py}};
+  \node[label, left=0.2cm of train] {CLI};
+
+  % Layer 2: Agents
+  \node[m1, below=1.2cm of train] (m1) {\textbf{Mô hình 1}\\ MinimaxAgent};
+  \node[m2, right=of m1] (m2) {\textbf{Mô hình 2}\\ AlphaBetaAgent};
+  \node[m3, right=of m2] (m3) {\textbf{Mô hình 3}\\ HybridAgent};
+  \node[label, left=0.2cm of m1] {Agent};
+
+  % Layer 3: Search + Evaluation
+  \node[core, below=1.2cm of m1] (mm) {\texttt{search/}\\ minimax};
+  \node[core, right=of mm] (ab) {\texttt{search/}\\ alphabeta};
+  \node[core, right=of ab] (qs) {\texttt{search/}\\ quiescence};
+  \node[core, right=of qs] (tt) {\texttt{search/}\\ transposition};
+  \node[core, right=of tt] (idd) {\texttt{search/}\\ iterative\_deep.};
+
+  \node[core, below=0.6cm of mm] (mo) {\texttt{search/}\\ move\_ordering};
+  \node[core, right=of mo] (he) {\texttt{search/}\\ heuristics};
+  \node[core, right=of he] (ev) {\texttt{evaluation/}\\ evaluator};
+  \node[core, right=of ev] (pt) {\texttt{evaluation/}\\ piece\_tables};
+  \node[label, left=0.2cm of mm] {Search};
+  \node[label, left=0.2cm of mo] {Eval};
+
+  % Layer 4: RL
+  \node[m3, below=1cm of mo] (sp) {\texttt{training/}\\ self\_play};
+  \node[m3, right=of sp] (ql) {\texttt{rl/}\\ q\_learning};
+  \node[m3, right=of ql] (rb) {\texttt{rl/}\\ replay+batch};
+  \node[m3, right=of rb] (rw) {\texttt{rl/}\\ reward};
+  \node[m3, right=of rw] (st) {\texttt{board/}\\ state+compact};
+  \node[label, left=0.2cm of sp] {RL};
+
+  % Layer 5: Analytics + UI
+  \node[ana, below=1cm of sp] (pgn) {\texttt{analytics/}\\ pgn\_writer};
+  \node[ana, right=of pgn] (elo) {\texttt{analytics/}\\ elo};
+  \node[ana, right=of elo] (plots) {\texttt{analytics/}\\ plots};
+  \node[ana, right=of plots] (uic) {\texttt{ui/}\\ app (console)};
+  \node[ana, right=of uic] (uip) {\texttt{ui/}\\ pygame\_app};
+  \node[label, left=0.2cm of pgn] {Anal/UI};
+
+  % Flows
+  \draw[flow] (train.south) -- (m3.north);
+  \draw[flow] (eval.south) -- (m1.north);
+  \draw[flow] (eval.south) -- (m2.north);
+  \draw[flow] (eval.south) -- (m3.north);
+  \draw[flow] (play.south) -- (m2.north);
+  \draw[flow] (play.south) -- (m3.north);
+
+  \draw[flow] (m1.south) -- (mm.north);
+  \draw[flow] (m2.south) -- (ab.north);
+  \draw[flow] (m3.south) -- (ab.north);
+  \draw[flow] (m2.south) -- (idd.north);
+  \draw[flow] (m3.south) -- (idd.north);
+
+  \draw[dashflow] (ab.south) -- (mo.north);
+  \draw[dashflow] (ab.south) -- (he.north);
+  \draw[dashflow] (ab.south) -- (ev.north);
+  \draw[dashflow] (qs.south) -- (mo.north);
+  \draw[dashflow] (idd.south) -- (tt.north);
+  \draw[dashflow] (ev.south) -- (pt.north);
+
+  \draw[flow] (sp.north) -- (ql.south west);
+  \draw[flow] (sp.north) -- (ev.south);
+  \draw[flow] (sp.east) -- (ql.west);
+  \draw[flow] (ql.east) -- (rb.west);
+  \draw[flow] (sp.north) -- (rw.south west);
+  \draw[flow] (sp.north) -- (st.south west);
+
+  \draw[flow] (eval.east) to[bend left=30] (pgn.east);
+  \draw[flow] (eval.east) to[bend left=20] (elo.north east);
+  \draw[flow] (train.west) to[bend right=15] (plots.west);
+  \draw[flow] (plot.south) -- (plots.north);
+  \draw[flow] (play.east) to[bend left=10] (uic.north);
+  \draw[flow] (play.east) to[bend left=15] (uip.north);
+
+\end{tikzpicture}%
+}
+\caption{Sơ đồ tổng quan 5 tầng. Mũi tên đậm = phụ thuộc trực tiếp;
+mũi tên đứt = truy cập gián tiếp qua API chung. Màu cam = Mô hình 1,
+xanh dương = Mô hình 2, xanh lá = Mô hình 3 và RL, vàng = lõi tìm kiếm/đánh giá,
+tím = analytics/UI.}
+\label{fig:overview}
+\end{figure}
+
+\clearpage
+\section{So sánh 3 mô hình ở góc nhìn thuật toán}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=0.5cm and 0.7cm]
+
+  \node[m1, minimum width=4cm] (m1head) {\textbf{Mô hình 1 --- Minimax thuần}};
+  \node[m1, below=of m1head, minimum width=4cm] (m1box) {
+    \texttt{MinimaxAgent.choose\_move}\\
+    $\downarrow$\\
+    \texttt{minimax(s, d, max, eval)}\\
+    \emph{depth-limited, không cắt tỉa}
+  };
+  \node[font=\itshape\small, below=of m1box, text width=4cm, align=center] (m1cmp) {
+    Độ phức tạp\\$O(b^d)$
+  };
+
+  \node[m2, right=2cm of m1head, minimum width=4cm] (m2head) {\textbf{Mô hình 2 --- Alpha-Beta}};
+  \node[m2, below=of m2head, minimum width=4cm] (m2box) {
+    \texttt{AlphaBetaAgent.choose\_move}\\
+    $\downarrow$\\
+    \texttt{alphabeta(s, d, $\alpha$, $\beta$,...)}\\
+    \emph{+ TT, +/-- quiescence, +/-- ID,}\\
+    \emph{+/-- killer + history}
+  };
+  \node[font=\itshape\small, below=of m2box, text width=4cm, align=center] (m2cmp) {
+    Độ phức tạp lý tưởng\\$O(b^{d/2})$
+  };
+
+  \node[m3, right=2cm of m2head, minimum width=4cm] (m3head) {\textbf{Mô hình 3 --- Hybrid}};
+  \node[m3, below=of m3head, minimum width=4cm] (m3box) {
+    \texttt{HybridAgent.choose\_move}\\
+    $\downarrow$\\
+    \texttt{alphabeta} $+ \lambda \cdot Q(s,a)$\\
+    \emph{(Q-table tự học qua self-play)}
+  };
+  \node[font=\itshape\small, below=of m3box, text width=4cm, align=center] (m3cmp) {
+    Điểm root:\\Minimax $+\,\lambda\, Q$
+  };
+
+  \node[core, below=1.6cm of m2box, minimum width=10cm] (sharedev) {
+    \textbf{Thành phần dùng chung}: \texttt{evaluation/evaluator.py}\\
+    (material, mobility, king safety, center, pawn structure, threats)
+  };
+
+  \draw[flow] (m1box.south) -- (m1cmp.north);
+  \draw[flow] (m2box.south) -- (m2cmp.north);
+  \draw[flow] (m3box.south) -- (m3cmp.north);
+  \draw[dashflow] (m1cmp.south) |- (sharedev.west);
+  \draw[dashflow] (m2cmp.south) -- (sharedev.north);
+  \draw[dashflow] (m3cmp.south) |- (sharedev.east);
+
+\end{tikzpicture}
+\caption{Ba mô hình dùng chung hàm đánh giá vị trí; điểm khác biệt nằm ở cơ chế
+tìm kiếm và (với Mô hình 3) lớp Q bổ sung tại root.}
+\label{fig:models}
+\end{figure}
+
+\section{Vòng huấn luyện self-play (Mô hình 3)}
+
+\begin{figure}[h!]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[node distance=0.7cm and 0.7cm]
+  \node[io] (env) {\texttt{ChessEnv}\\(python-chess)};
+  \node[core, right=of env] (sk) {\texttt{state\_key(board)}\\$\to s$};
+  \node[m3, right=of sk] (sel) {\texttt{q.select(s, A)}\\\emph{$\varepsilon$-greedy}};
+  \node[m3, below=of sel] (push) {\texttt{env.push(a)}};
+  \node[m3, left=of push] (reward) {\texttt{r = terminal}\\\texttt{+ shaping + move}};
+  \node[m3, left=of reward] (upd) {\texttt{q.update(s,a,r,s',A')}};
+  \node[m3, below=of upd] (replay) {\texttt{ReplayBuffer.add(...)}};
+  \node[m3, right=of replay] (batch) {\texttt{batch\_update(q, replay,}\\\texttt{batch\_size, iters)}\\\emph{(sau mỗi ván)}};
+  \node[ana, right=of batch] (save) {\texttt{q.save(q\_table.pkl)}\\\texttt{history\_path.csv}};
+
+  \draw[flow] (env) -- (sk);
+  \draw[flow] (sk) -- (sel);
+  \draw[flow] (sel) -- (push);
+  \draw[flow] (push) -- (reward);
+  \draw[flow] (reward) -- (upd);
+  \draw[flow] (upd) -- (replay);
+  \draw[flow] (replay) -- (batch);
+  \draw[flow] (batch) -- (save);
+  \draw[flow] (push.north) to[bend right=30] node[font=\small,above,sloped] {$s'$, action list $A'$} (sk.east);
+
+  \node[draw=cArrow, dashed, rounded corners=3pt, inner sep=6pt,
+        below=1.2cm of replay, text width=13cm, align=center, fill=yellow!10] (bellman) {
+    \textbf{Cập nhật Bellman} (mục 2.5 báo cáo):\\
+    $Q(s,a) \leftarrow Q(s,a) + \alpha\bigl[r + \gamma \cdot \max_{a'} Q(s', a') - Q(s,a)\bigr]$\\
+    $\alpha = 0.1,\quad \gamma = 0.95,\quad \varepsilon_0 = 0.2,\quad \varepsilon_{\min} = 0.02,\quad \text{decay}=0.999$
+  };
+  \draw[dashflow] (upd.south) -| (bellman.north);
+
+\end{tikzpicture}%
+}
+\caption{Vòng self-play: AI tự chơi với chính mình; mỗi nước sinh transition $(s,a,r,s')$
+cập nhật Q-table. Sau mỗi ván, mini-batch off-policy được rút ra từ ReplayBuffer để học lại.}
+\label{fig:selfplay}
+\end{figure}
+
+\section{Quy trình đánh giá so sánh}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=0.8cm and 0.8cm]
+  \node[io] (cfg) {\texttt{config/config.yaml}};
+  \node[io, right=of cfg] (evcli) {\texttt{scripts/evaluate.py}};
+
+  \node[m1, below=of cfg] (a1) {MinimaxAgent};
+  \node[m2, right=of a1] (a2) {AlphaBetaAgent};
+  \node[m3, right=of a2] (a3) {HybridAgent};
+
+  \node[core, below=of a2, minimum width=11cm] (rr) {
+    \textbf{Vòng tròn (round-robin)} --- 3 cặp đối đầu:\\
+    \texttt{minimax} vs \texttt{alphabeta},\quad
+    \texttt{minimax} vs \texttt{hybrid},\quad
+    \texttt{alphabeta} vs \texttt{hybrid}\\
+    (mỗi cặp đổi màu sau từng ván để công bằng)
+  };
+
+  \node[ana, below=1.2cm of rr.south west, anchor=north west] (csv) {\texttt{games.csv}\\(per-move stats)};
+  \node[ana, right=of csv] (sum) {\texttt{summary.json}\\(W/L/D, avg time/node)};
+  \node[ana, right=of sum] (pgn) {\texttt{games.pgn}\\(mở trong lichess)};
+  \node[ana, right=of pgn] (eloj) {\texttt{elo.json}\\(rating tuần tự)};
+
+  \node[ana, below=of sum] (fig) {\texttt{figures/*.png}\\(eval\_summary, node\_counts)};
+
+  \draw[flow] (cfg) -- (evcli);
+  \draw[flow] (evcli) -- (a1.north);
+  \draw[flow] (evcli) -- (a2.north);
+  \draw[flow] (evcli) -- (a3.north);
+  \draw[flow] (a1) -- (rr);
+  \draw[flow] (a2) -- (rr);
+  \draw[flow] (a3) -- (rr);
+  \draw[flow] (rr.south) -- (csv.north);
+  \draw[flow] (rr.south) -- (sum.north);
+  \draw[flow] (rr.south) -- (pgn.north);
+  \draw[flow] (rr.south) -- (eloj.north);
+  \draw[flow] (sum.south) -- (fig.north);
+
+\end{tikzpicture}
+\caption{Quy trình \texttt{evaluate.py}: 3 agent đánh round-robin, mỗi ván ghi
+metric chi tiết. Đầu ra phục vụ trực tiếp các mục 4.4--4.6 trong báo cáo.}
+\label{fig:evaluate}
+\end{figure}
+
+\clearpage
+\section{Bản đồ tệp tin}
+
+{\small
+\begin{verbatim}
+chess-ai-selfplay/
+├── config/
+│   └── config.yaml          # tham số mô hình + cờ ablation (mục 4.2)
+├── src/
+│   ├── board/
+│   │   ├── chess_env.py     # wrapper python-chess (mục 2.2, 3.3)
+│   │   ├── state.py         # state_key + feature_vector (mục 3.6.1)
+│   │   └── compact_state.py # bucket feature_vector → key gọn  ← NÂNG CẤP
+│   ├── search/
+│   │   ├── minimax.py              # Mô hình 1  ←  BASELINE, KHÔNG SỬA
+│   │   ├── alphabeta.py            # Mô hình 2 + 3 cốt lõi (mục 2.4, 3.8.2)
+│   │   ├── move_ordering.py        # MVV-LVA + killer + history
+│   │   ├── transposition.py        # TT EXACT/LOWER/UPPER  ← NÂNG CẤP
+│   │   ├── quiescence.py           # chống horizon effect  ← NÂNG CẤP
+│   │   ├── heuristics.py           # killer + history table  ← NÂNG CẤP
+│   │   └── iterative_deepening.py  # time-control + PV reuse  ← NÂNG CẤP
+│   ├── evaluation/
+│   │   ├── evaluator.py            # material + mobility + king safety + ...
+│   │   └── piece_tables.py         # PIECE_VALUES + piece-square tables
+│   ├── rl/
+│   │   ├── q_learning.py     # Q-table + Bellman update
+│   │   ├── reward.py         # 3-tier reward (terminal/shaping/move)
+│   │   ├── replay.py         # ReplayBuffer (deque)
+│   │   └── batch_update.py   # off-policy mini-batch  ← NÂNG CẤP
+│   ├── agents/
+│   │   ├── base_agent.py
+│   │   ├── minimax_agent.py        ←  BASELINE, KHÔNG SỬA
+│   │   ├── alphabeta_agent.py
+│   │   └── hybrid_agent.py
+│   ├── training/
+│   │   └── self_play.py     # vòng huấn luyện + replay batch + tqdm
+│   ├── analytics/                  ← MODULE MỚI HOÀN TOÀN
+│   │   ├── pgn_writer.py    # xuất PGN ván cờ (mục 4.5)
+│   │   ├── elo.py           # tính ELO tuần tự (mục 4.4.4)
+│   │   └── plots.py         # matplotlib (mục 4.6)
+│   └── ui/
+│       ├── app.py           # console UI
+│       └── pygame_app.py    # GUI Pygame  ← NÂNG CẤP
+├── scripts/
+│   ├── train.py
+│   ├── evaluate.py
+│   ├── play.py
+│   └── plot_results.py     ← NÂNG CẤP
+├── tests/                  # 54 test, bao phủ từng module
+└── docs/
+    ├── STRUCTURE.md        # ánh xạ file ↔ mục báo cáo
+    ├── TASK_ASSIGNMENT.md  # phân công chi tiết theo thành viên
+    ├── CONG_THUC.md        # công thức nháp để tính tay
+    └── architecture/       # tài liệu này
+\end{verbatim}
+}
+
+\textit{Chú thích}: dòng có ``\,$\leftarrow$ NÂNG CẤP'' là thành phần được bổ sung so với
+phiên bản đồ án gốc; ``BASELINE, KHÔNG SỬA'' là module giữ nguyên để Mô hình 1 đóng
+vai trò baseline so sánh.
+
+\section{Quy ước bảo toàn baseline (mục 4.4.5 báo cáo)}
+
+Để bảo đảm việc so sánh 3 mô hình diễn ra công bằng, đồ án tuân thủ các quy ước:
+
+\begin{itemize}
+  \item Mô hình 1 (\texttt{minimax.py}, \texttt{minimax\_agent.py}) \textbf{không bị sửa}
+    sau khi đã ổn định. Mọi cải tiến chỉ áp dụng cho Mô hình 2 và 3.
+  \item Mọi cải tiến đều có cờ trong \texttt{config.yaml}
+    (\texttt{use\_quiescence}, \texttt{use\_iterative\_deepening},
+    \texttt{batch\_updates\_per\_game} \dots), cho phép \textbf{tái lập hành vi đồ án
+    gốc} bằng cách đặt tất cả các cờ về \texttt{false} hoặc 0.
+  \item \textbf{Ablation study}: chạy \texttt{evaluate.py} với hai profile
+    \texttt{legacy.yaml} / \texttt{upgraded.yaml} cho ra hai cột số liệu so sánh
+    đúng theo từng cải tiến.
+  \item Khi đo nodes/move và time/move cho báo cáo, đặt
+    \texttt{use\_iterative\_deepening: false} và \texttt{time\_limit\_s: null}
+    để số liệu ổn định, không phụ thuộc tốc độ máy.
+\end{itemize}
+
+\end{document}

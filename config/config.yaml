@@ -1,0 +1,118 @@
+# Tham số hệ thống (mục 4.2 báo cáo)
+
+search:
+  max_depth: 4              # độ sâu tìm kiếm Minimax/Alpha-Beta
+  use_move_ordering: true
+  use_transposition: true   # Zobrist hashing (mục 2.4.5) — bản nâng cấp dùng bound flag EXACT/LOWER/UPPER
+  # Cờ nâng cấp — đặt false để tái lập hành vi đồ án bản gốc (ablation study, mục 4.4.5)
+  use_quiescence: true            # Mục 2.4.3 — chống horizon effect
+  q_max_depth: 6                  # độ sâu tối đa của quiescence
+  use_iterative_deepening: false  # Mục 2.4.4 — bật khi cần time-control / PV reuse (đặt false để số liệu báo cáo ổn định)
+  time_limit_s: null              # null = không giới hạn thời gian
+  use_killer_moves: true          # Mục 2.4.2 mở rộng
+  use_history_heuristic: true     # Mục 2.4.2 mở rộng
+
+q_learning:
+  alpha: 0.1                # α - learning rate
+  gamma: 0.95               # γ - discount factor
+  epsilon: 0.2              # ε - exploration ban đầu
+  epsilon_min: 0.02
+  epsilon_decay: 0.999
+  q_value_step: null              # null = float Q-value gốc; ví dụ 0.05 để lượng tử hoá
+  q_value_clip: null              # null = không clip; ví dụ 5.0 để giới hạn Q-value
+  state_representation: full       # full | compact  (mục 3.6.1 mở rộng)
+  batch_size: 32                   # mini-batch cho off-policy replay (mục 3.6.3)
+  batch_updates_per_game: 4        # 0 = legacy (không dùng replay)
+  warmup_games: 50                 # n ván đầu chưa dùng replay (tránh overfit reward shaping)
+
+hybrid:
+  lambda: 0.5               # λ trong FinalScore = MinimaxScore + λ × QValue
+  use_confidence: true      # Confidence-Aware Hybrid Q: Q bonus *= N(s,a)/(N(s,a)+k)
+  confidence_k: 10.0
+  # Preset Siêu khó địa ngục: Hybrid + compact quantized Q + MCTS root bonus
+  hell_depth: 4
+  hell_q_max_depth: 6
+  hell_time_limit_s: 1.0
+  hell_q_value_step: 0.05
+  hell_q_value_clip: 5.0
+  hell_mcts_iterations: 180
+  hell_mcts_rollout_depth: 14
+  hell_mcts_weight: 120.0
+  hell_mcts_time_limit_s: 0.45
+  hell_use_memory: true
+  hell_memory_path: data/move_cache/hell_memory.json
+  # Preset Trung bình: Alpha-Beta có TT/quiescence/killer/history ở độ sâu vừa phải
+  medium_depth: 3
+
+difficulty:
+  default: medium
+  profiles:
+    easy:
+      label: Easy
+      target_elo: 900
+      depth: 1
+      temperature_cp: 220.0
+      noise_cp: 160.0
+      blunder_rate: 0.30
+      blunder_pool: 6
+      candidate_pool: 8
+      use_quiescence: false
+      use_iterative_deepening: false
+      use_killer_moves: false
+      use_history_heuristic: false
+    medium:
+      label: Medium
+      target_elo: 1200
+      depth: 2
+      temperature_cp: 90.0
+      noise_cp: 55.0
+      blunder_rate: 0.10
+      blunder_pool: 4
+      candidate_pool: 5
+      use_quiescence: false
+      use_iterative_deepening: false
+    hard:
+      label: Hard
+      target_elo: 1550
+      depth: 4
+      temperature_cp: 0.0
+      noise_cp: 0.0
+      blunder_rate: 0.0
+      blunder_pool: 2
+      candidate_pool: 3
+      use_quiescence: true
+      use_iterative_deepening: false
+      use_killer_moves: true
+      use_history_heuristic: true
+
+training:
+  num_games: 2000           # số ván self-play (giới hạn cho phạm vi đồ án)
+  max_moves: 120            # cắt ván hòa nếu quá dài
+  save_every: 200
+  q_table_path: data/q_tables/q_table.pkl
+  history_path: experiments/results/training_history.csv
+  plot_after_training: true # tự render figure cuối training
+
+evaluation:
+  games_per_pair: 50        # số ván mỗi cặp đối đầu khi so sánh 3 mô hình
+  results_dir: experiments/results
+  figures_dir: experiments/figures
+  export_pgn: true          # xuất experiments/results/games.pgn (mục 4.5)
+  compute_elo: true         # tính ELO rating cho 3 model (mục 4.4.4)
+  elo_k_factor: 32
+  show_progress: true       # tqdm progress bar
+
+ui:
+  default: console          # console | pygame
+  difficulty: medium        # easy | medium | hell
+  pygame:
+    square_size: 64
+
+xai:
+  use_stockfish: true       # dùng Stockfish làm nguồn điểm số khi tìm thấy
+  engine_path: null         # null = tự dò: STOCKFISH_PATH -> PATH -> engines/stockfish/
+  engine_depth: 14          # độ sâu Stockfish; 12-16 cân bằng tốc độ/độ tin cậy
+  multipv: 5                # số phương án hàng đầu Stockfish chấm mỗi vị trí
+  live_explanations: true   # giải thích trực tiếp trong màn chơi pygame (H = gợi ý, T = tổng kết)
+
+
