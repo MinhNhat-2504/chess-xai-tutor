@@ -1,4 +1,4 @@
-# ♟️ Chess XAI Tutor — Phân tích ván cờ và giải thích bằng tiếng Việt
+# Chess XAI Tutor — Phân tích ván cờ và giải thích bằng tiếng Việt
 
 Bạn thua một ván cờ và muốn biết **mình sai ở đâu, vì sao sai, và lần sau nên làm gì**?
 
@@ -11,27 +11,27 @@ Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt
 
 ## Tính năng chính
 
-**🔍 Phân tích từng nước đi**
+**Phân tích từng nước đi**
 - Điểm số, nước tốt nhất, top phương án và biến chính lấy từ **Stockfish** (tự rơi về engine nội bộ nếu máy chưa cài).
 - Nhãn chất lượng quen thuộc: nước tốt nhất / nước tốt / thiếu chính xác / sai lầm / blunder.
 - **Đòn trừng phạt**: với nước sai, hiện luôn chuỗi nước đối thủ khai thác — trả lời câu "vì sao sai".
 - **Cơ hội thắng** (%) quy đổi theo công thức Lichess.
 
-**🏷️ Motif chiến thuật có tên** — ngôn ngữ mà người học cờ thực sự dùng:
+**Motif chiến thuật có tên** — ngôn ngữ mà người học cờ thực sự dùng:
 - Đòn đôi (fork), ghim (pin), đòn xiên (skewer), đòn mở (discovered attack/check), chiếu hết tầng cuối.
 - Với nước sai, phần mềm soi cả motif mà nước đó *cho phép đối thủ* thực hiện.
 
-**🎮 Chơi với AI và học ngay trong ván**
+**Chơi với AI và học ngay trong ván**
 - Ba mức độ khó: Dễ (người mới cũng thắng được), Trung bình, Siêu khó địa ngục.
 - Sau mỗi nước đi, câu giải thích hiện ngay dưới bàn cờ.
 - Phím `H`: gợi ý nước tốt nhất kèm biến chính. Phím `T`: tổng kết ván.
 
-**📊 Tổng kết ván để rút kinh nghiệm**
+**Tổng kết ván để rút kinh nghiệm**
 - Accuracy và ACPL từng bên — hai chỉ số chuẩn để đo trình độ.
 - Lỗi phân theo giai đoạn khai cuộc / trung cuộc / tàn cuộc.
 - Danh sách nước cần xem lại và **chủ đề cần luyện** (bạn hay để hở đòn gì).
 
-**📁 Xem lại ván đấu từ Chess.com / Lichess**
+**Xem lại ván đấu từ Chess.com / Lichess**
 - Kéo-thả file PGN vào viewer, bấm "Lỗi kế" để nhảy thẳng tới các nước sai.
 
 ## Cài đặt
