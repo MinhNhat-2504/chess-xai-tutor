@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess XAI Tutor — Phân tích ván cờ</title>
+<style>
+  :root {
+    --bg: #282c34; --panel: #343a45; --panel2: #3d4450; --text: #dcdcdc;
+    --muted: #a8aeb8; --accent: #5bc0de; --border: #4e5663;
+    --best: #5abe7a; --good: #5bc0de; --inaccuracy: #ebba49;
+    --mistake: #ed7e43; --blunder: #df4f4f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
+  textarea {
+    width: 100%; min-height: 150px; background: #23272e; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+    font-family: Consolas, monospace; font-size: 13px; resize: vertical;
+  }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  button {
+    background: var(--accent); color: #16323c; border: 0; border-radius: 8px;
+    padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); font-weight: 400; }
+  button:disabled { opacity: .45; cursor: default; }
+  input[type=file] { display: none; }
+  .filelabel {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; cursor: pointer; font-size: 14px;
+  }
+  #status { color: var(--muted); font-size: 14px; }
+  .progress { height: 6px; background: #23272e; border-radius: 3px; overflow: hidden; margin-top: 10px; display: none; }
+  .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+  #results { display: none; }
+  .layout { display: flex; gap: 18px; flex-wrap: wrap; }
+  .boardcol { flex: 0 0 auto; }
+  .infocol { flex: 1 1 320px; min-width: 300px; }
+  #board { border-radius: 8px; display: block; max-width: 100%; }
+  .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; }
+  .chip {
+    padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer;
+    font-size: 13px; border: 1px solid transparent; color: var(--text);
+  }
+  .chip.current { border-color: var(--accent); }
+  .chip.q-best { color: var(--best); } .chip.q-good { color: var(--good); }
+  .chip.q-inaccuracy { color: var(--inaccuracy); background: #4a4330; }
+  .chip.q-mistake { color: var(--mistake); background: #4c3a2d; }
+  .chip.q-blunder { color: var(--blunder); background: #4c2e2e; }
+  .qhead { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+  .kv { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+  .explain { background: var(--panel2); border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 15px; }
+  .refute { color: var(--mistake); font-size: 14px; margin: 8px 0; }
+  ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
+  .cand { font-size: 14px; margin: 3px 0; }
+  .cand .line { color: var(--muted); }
+  h3 { font-size: 15px; color: var(--accent); margin: 16px 0 6px; }
+  #summarycard ul { font-size: 15px; }
+  .players { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chess XAI Tutor</h1>
+  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn — phần mềm phân tích bằng Stockfish và giải thích từng nước bằng tiếng Việt.</p>
+
+  <div class="card">
+    <textarea id="pgn-input" placeholder='Dán PGN vào đây, ví dụ:
+
+[Event "Live Chess"]
+[White "mnhat2504"]
+...
+
+1. d4 d5 2. Bf4 Nf6 ...'></textarea>
+    <div class="row">
+      <button id="analyze-btn" onclick="startAnalyze()">Phân tích ván cờ</button>
+      <label class="filelabel">Chọn file .pgn<input type="file" id="file-input" accept=".pgn,.txt"></label>
+      <span id="status"></span>
+    </div>
+    <div class="progress" id="progress"><div id="progress-bar"></div></div>
+  </div>
+
+  <div id="results">
+    <div class="card">
+      <div class="players" id="players"></div>
+      <div class="layout">
+        <div class="boardcol">
+          <img id="board" width="480" height="480" alt="Bàn cờ">
+          <div class="controls">
+            <button class="ghost" onclick="go(position-1)">← Trước</button>
+            <button class="ghost" onclick="go(position+1)">Sau →</button>
+            <button class="ghost" onclick="nextError()">Lỗi kế</button>
+            <button class="ghost" onclick="go(0)">Về đầu</button>
+          </div>
+          <div class="movelist" id="movelist"></div>
+        </div>
+        <div class="infocol" id="infocol">
+          <p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Lỗi kế" nhảy thẳng tới nước sai tiếp theo.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card hidden" id="summarycard">
+      <h3 style="margin-top:0">Tổng kết ván</h3>
+      <ul id="summarylines"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUALITY_COLOR = { best: "var(--best)", good: "var(--good)", inaccuracy: "var(--inaccuracy)", mistake: "var(--mistake)", blunder: "var(--blunder)" };
+const ERRORS = new Set(["inaccuracy", "mistake", "blunder"]);
+let reports = [], total = 0, position = 0, jobId = null, initialFen = "", engine = "", done = false;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("file-input").addEventListener("change", ev => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { $("pgn-input").value = reader.result; startAnalyze(); };
+  reader.readAsText(file);
+});
+
+document.addEventListener("keydown", ev => {
+  if (ev.target.tagName === "TEXTAREA") return;
+  if (ev.key === "ArrowLeft") go(position - 1);
+  else if (ev.key === "ArrowRight") go(position + 1);
+});
+
+function setStatus(text) { $("status").textContent = text; }
+
+async function startAnalyze() {
+  const text = $("pgn-input").value.trim();
+  if (!text) { setStatus("Hãy dán PGN hoặc chọn file trước đã."); return; }
+  $("analyze-btn").disabled = true;
+  setStatus("Đang gửi ván cờ...");
+  try {
+    const resp = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ pgn: text }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) { setStatus(data.error || "Có lỗi khi đọc PGN."); $("analyze-btn").disabled = false; return; }
+    jobId = data.job_id; total = data.total;
+    reports = []; position = 0; done = false;
+    $("results").style.display = "block";
+    $("summarycard").classList.add("hidden");
+    $("progress").style.display = "block";
+    poll();
+  } catch (err) {
+    setStatus("Không kết nối được server: " + err);
+    $("analyze-btn").disabled = false;
+  }
+}
+
+async function poll() {
+  const resp = await fetch(`/api/job/${jobId}?since=${reports.length}`);
+  const data = await resp.json();
+  if (!resp.ok) { setStatus(data.error || "Mất kết nối phiên phân tích."); $("analyze-btn").disabled = false; return; }
+  const hadNone = reports.length === 0;
+  reports.push(...data.reports);
+  initialFen = data.initial_fen; engine = data.engine || engine;
+  renderPlayers(data.headers);
+  $("progress-bar").style.width = total ? (100 * reports.length / total) + "%" : "0";
+  if (hadNone && reports.length > 0 && position === 0) go(1); else render();
+  if (data.status === "done") {
+    done = true;
+    setStatus(`Đã phân tích ${total} nước — engine: ${engine}`);
+    $("progress").style.display = "none";
+    $("analyze-btn").disabled = false;
+    renderSummary(data.summary_lines || []);
+    render();
+  } else if (data.status === "error") {
+    setStatus("Phân tích dừng vì lỗi: " + (data.error_message || "?"));
+    $("analyze-btn").disabled = false;
+  } else {
+    setStatus(`Đang phân tích ${reports.length}/${total} nước — engine: ${engine}`);
+    setTimeout(poll, 700);
+  }
+}
+
+function renderPlayers(headers) {
+  if (!headers) return;
+  const parts = [];
+  if (headers.White || headers.Black) parts.push(`${headers.White || "?"} (Trắng) vs ${headers.Black || "?"} (Đen)`);
+  if (headers.Result) parts.push("Kết quả: " + headers.Result);
+  if (headers.Date) parts.push(headers.Date);
+  $("players").textContent = parts.join("  ·  ");
+}
+
+function go(newPosition) {
+  position = Math.max(0, Math.min(newPosition, reports.length));
+  render();
+}
+
+function nextError() {
+  for (let i = position; i < reports.length; i++) {
+    if (ERRORS.has(reports[i].quality)) { go(i + 1); return; }
+  }
+  setStatus(done ? "Không còn nước lỗi nào phía sau." : "Chưa thấy lỗi tiếp theo — phân tích vẫn đang chạy.");
+}
+
+function render() {
+  let fen = initialFen, lastmove = "";
+  if (position > 0 && reports[position - 1]) {
+    fen = reports[position - 1].fen_after;
+    lastmove = reports[position - 1].move_uci;
+  }
+  $("board").src = `/board.svg?fen=${encodeURIComponent(fen)}&lastmove=${lastmove}&size=480`;
+
+  const list = $("movelist");
+  list.innerHTML = "";
+  for (let i = 0; i < reports.length; i++) {
+    const r = reports[i];
+    const chip = document.createElement("span");
+    chip.className = `chip q-${r.quality}` + (i + 1 === position ? " current" : "");
+    const prefix = r.side === "white" ? r.move_number + "." : "";
+    chip.textContent = prefix + r.move_san;
+    chip.onclick = () => go(i + 1);
+    list.appendChild(chip);
+  }
+
+  const info = $("infocol");
+  if (position === 0 || !reports[position - 1]) {
+    info.innerHTML = '<p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Lỗi kế" nhảy thẳng tới nước sai tiếp theo.</p>';
+    return;
+  }
+  const r = reports[position - 1];
+  const color = QUALITY_COLOR[r.quality] || "var(--text)";
+  const number = r.side === "white" ? `${r.move_number}.` : `${r.move_number}...`;
+  let html = `<p class="qhead" style="color:${color}">${number} ${esc(r.move_san)} — ${esc(r.quality_vi).toUpperCase()}</p>`;
+  const kv = [`Thiệt hại: ${Math.round(r.centipawn_loss)}`, `Nước tốt hơn: ${esc(r.best_move_san)}`];
+  if (r.win_chance !== undefined) kv.push(`Cơ hội thắng: ${Math.round(r.win_chance)}% (tốt nhất: ${Math.round(r.win_chance_best)}%)`);
+  html += `<p class="kv">${kv.join("  ·  ")}</p>`;
+  html += `<div class="explain">${esc(r.explanation_vi)}</div>`;
+  if (ERRORS.has(r.quality) && r.refutation_san) {
+    html += `<p class="refute">Đòn trừng phạt: ${esc(r.refutation_san)}</p>`;
+  }
+  const facts = (r.tactical_facts || []).slice(0, 3);
+  const reasons = (r.reasons || []).slice(0, 3);
+  if (facts.length || reasons.length) {
+    html += "<h3>Vì sao?</h3><ul>";
+    for (const fact of facts) html += `<li>${esc(fact)}</li>`;
+    for (const reason of reasons) {
+      const sign = reason.delta >= 0 ? "+" : "";
+      html += `<li>${esc(reason.label_vi)}: ${sign}${Math.round(reason.delta)}</li>`;
+    }
+    html += "</ul>";
+  }
+  const candidates = r.top_candidates || [];
+  if (candidates.length) {
+    html += "<h3>Top phương án</h3>";
+    for (const candidate of candidates) {
+      html += `<div class="cand"><b>${esc(candidate.move_san)}</b>: ${candidate.score >= 0 ? "+" : ""}${Math.round(candidate.score)}`;
+      if (candidate.line_san) html += ` <span class="line">${esc(candidate.line_san)}</span>`;
+      html += "</div>";
+    }
+  }
+  info.innerHTML = html;
+}
+
+function renderSummary(lines) {
+  if (!lines.length) return;
+  const list = $("summarylines");
+  list.innerHTML = "";
+  for (const line of lines) {
+    const item = document.createElement("li");
+    item.textContent = line;
+    list.appendChild(item);
+  }
+  $("summarycard").classList.remove("hidden");
+}
+</script>
+</body>
+</html>

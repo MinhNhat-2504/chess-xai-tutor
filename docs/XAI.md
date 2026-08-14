@@ -59,6 +59,22 @@ Mỗi báo cáo gồm:
 - **Sự kiện luật cờ**: bắt quân, chiếu/chiếu hết, nhập thành, phong cấp và quân
   treo. Những sự kiện này giúp người học biết *vì sao* nước đó đáng chú ý.
 
+## Giao diện web: dán PGN là có phân tích
+
+```bash
+python scripts/web_app.py
+```
+
+Mở trình duyệt tại `http://127.0.0.1:8000`, dán PGN (Chess.com: vào ván đấu →
+Share → tab PGN → copy) hoặc chọn file `.pgn`, bấm **Phân tích ván cờ**. Kết
+quả hiện dần từng nước trong lúc phân tích chạy nền: bàn cờ SVG, danh sách
+nước tô màu theo chất lượng, câu giải thích tiếng Việt, đòn trừng phạt, top
+phương án kèm biến chính, và thẻ tổng kết ván khi xong. Điều hướng bằng phím
+`←`/`→`, nút "Lỗi kế" nhảy tới nước sai tiếp theo.
+
+Trang web tự chứa (không cần internet), chỉ chạy trên máy bạn (`127.0.0.1`).
+Tuỳ chọn: `--port`, `--engine-depth`, `--no-stockfish`.
+
 ## Giải thích trực tiếp khi chơi với AI
 
 ```bash
@@ -118,4 +134,4 @@ thấp và có thể đổi khi tăng depth — UI hiển thị engine đang dù
    qua từng ván; motif để hở giảm dần).
 3. Mở rộng bộ motif: quá tải (overloading), đánh lạc hướng (deflection),
    chiếu đôi, đòn phối hợp nhiều nước.
-4. Web UI để chia sẻ báo cáo phân tích mà không cần cài Python/Pygame.
+4. Deploy web UI lên hosting công khai để dùng không cần cài Python.

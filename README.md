@@ -32,7 +32,8 @@ Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt
 - Danh sách nước cần xem lại và **chủ đề cần luyện** (bạn hay để hở đòn gì).
 
 **Xem lại ván đấu từ Chess.com / Lichess**
-- Kéo-thả file PGN vào viewer, bấm "Lỗi kế" để nhảy thẳng tới các nước sai.
+- **Giao diện web**: dán PGN hoặc chọn file là có ngay bảng phân tích trên trình duyệt — bàn cờ, danh sách nước tô màu theo chất lượng, giải thích từng nước và tổng kết ván.
+- Hoặc viewer Pygame: kéo-thả file PGN, bấm "Lỗi kế" để nhảy thẳng tới các nước sai.
 
 ## Cài đặt
 
@@ -54,13 +55,21 @@ Không có Stockfish phần mềm vẫn chạy đầy đủ tính năng bằng e
 
 ## Dùng thử trong 30 giây
 
+**Phân tích ván cờ trên trình duyệt** — cách dễ nhất:
+
+```bash
+python scripts/web_app.py
+```
+
+Mở `http://127.0.0.1:8000`, dán PGN từ Chess.com (vào ván đấu → Share → tab PGN → copy) hoặc chọn file `.pgn`, bấm "Phân tích ván cờ". Kết quả hiện dần từng nước, không phải chờ cả ván.
+
 **Chơi với AI, có giải thích trực tiếp:**
 
 ```bash
 python scripts/play.py --ui pygame
 ```
 
-**Phân tích ván đã chơi trên Chess.com / Lichess** (tải PGN về rồi kéo-thả vào cửa sổ):
+**Xem lại PGN bằng viewer Pygame** (kéo-thả file vào cửa sổ):
 
 ```bash
 python scripts/xai_viewer.py
@@ -97,10 +106,11 @@ src/
   evaluation/   # Hàm đánh giá 8 thành phần
   rl/           # Q-Learning, replay buffer (phần nghiên cứu của đồ án)
   training/     # Self-play training
-  ui/           # Màn chơi Pygame + viewer phân tích PGN
+  ui/           # Web UI, màn chơi Pygame, viewer phân tích PGN
 scripts/
+  web_app.py        # Giao diện web: dán/upload PGN, phân tích trên trình duyệt
   play.py           # Chơi với AI (console hoặc pygame)
-  xai_viewer.py     # Viewer phân tích PGN
+  xai_viewer.py     # Viewer phân tích PGN (Pygame)
   analyze_game.py   # Phân tích PGN ra JSON
   train.py, evaluate.py, benchmark_difficulty.py   # Phục vụ nghiên cứu
 ```
@@ -129,4 +139,4 @@ Phần nghiên cứu gốc xây dựng và so sánh ba engine: Minimax, Alpha-Be
 - Bấm vào một phương án để xem biến thể diễn ra ngay trên bàn cờ.
 - Lưu lịch sử nhiều ván để theo dõi tiến bộ (accuracy tăng, motif để hở giảm).
 - Thêm motif nâng cao: quá tải (overloading), đánh lạc hướng (deflection), chiếu đôi.
-- Web UI để dùng không cần cài Python.
+- Deploy web UI lên hosting công khai để dùng không cần cài Python.

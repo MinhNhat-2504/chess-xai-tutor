@@ -4,4 +4,5 @@ pyyaml>=6.0              # YAML config loading
 matplotlib>=3.7          # charts for reports
 tqdm>=4.65               # self-play/evaluation progress bars
 pygame>=2.5              # pygame chess UI
+flask>=3.0               # web UI (scripts/web_app.py)
 pytest>=7.4              # tests
