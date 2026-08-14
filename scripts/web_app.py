@@ -8,6 +8,7 @@ Ví dụ:
 from __future__ import annotations
 
 import argparse
+import socket
 import sys
 from pathlib import Path
 
@@ -20,6 +21,25 @@ from src.ui.web_app import create_app
 for stream in (sys.stdout, sys.stderr):
     if hasattr(stream, "reconfigure"):
         stream.reconfigure(encoding="utf-8")
+
+
+def ensure_port(host: str, port: int) -> int:
+    """Trả về cổng dùng được.
+
+    Windows đôi khi chặn sẵn cả dải cổng (Hyper-V/WSL giữ riêng — lỗi WinError
+    10013 "forbidden by its access permissions"), nên nếu cổng mong muốn không
+    bind được thì tự chọn một cổng trống khác thay vì chết với traceback.
+    """
+    try:
+        with socket.socket() as probe:
+            probe.bind((host, port))
+        return port
+    except OSError:
+        with socket.socket() as probe:
+            probe.bind((host, 0))
+            free_port = probe.getsockname()[1]
+        print(f"[web] Cổng {port} bị hệ thống chặn hoặc đang bận — chuyển sang cổng {free_port}.")
+        return free_port
 
 
 def load_xai_config(config_path: Path) -> dict:
@@ -49,8 +69,9 @@ def main() -> None:
         multipv=int(xai_cfg.get("multipv", 5)),
         fallback_depth=args.depth,
     )
-    print(f"Chess XAI Tutor đang chạy tại: http://{args.host}:{args.port}  (Ctrl+C để dừng)")
-    app.run(host=args.host, port=args.port, debug=False)
+    port = ensure_port(args.host, args.port)
+    print(f"Chess XAI Tutor đang chạy tại: http://{args.host}:{port}  (Ctrl+C để dừng)")
+    app.run(host=args.host, port=port, debug=False)
 
 
 if __name__ == "__main__":
