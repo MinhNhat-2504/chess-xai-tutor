@@ -17,7 +17,7 @@
   h1 { font-size: 26px; margin: 0 0 4px; }
   .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
-  textarea { width: 100%; min-height: 150px; background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; resize: vertical; }
+  textarea { width: 100%; min-height: 130px; background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; resize: vertical; }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
   button { background: var(--accent); color: #16323c; border: 0; border-radius: 8px; padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; }
   button:hover { filter: brightness(1.1); }
@@ -32,63 +32,67 @@
   .progress { height: 6px; background: #23272e; border-radius: 3px; overflow: hidden; margin-top: 10px; display: none; }
   .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .4s; }
   #results { display: none; }
-  .layout { display: flex; gap: 20px; flex-wrap: wrap; }
+  .layout { display: flex; gap: 22px; flex-wrap: wrap; }
   .boardcol { flex: 0 0 auto; }
+  .boardwrap { display: flex; gap: 8px; align-items: stretch; }
   .infocol { flex: 1 1 320px; min-width: 300px; }
-  #board { border-radius: 8px; display: block; max-width: 100%; }
-  .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; max-width: 480px; }
+  #board { border-radius: 6px; display: block; max-width: 100%; }
+  /* Thanh ưu thế kiểu Chess.com */
+  .evalbar { width: 26px; height: 480px; background: #403d39; border-radius: 4px; position: relative; overflow: hidden; }
+  .evalbar .white { position: absolute; left: 0; right: 0; bottom: 0; background: #f0f0f0; transition: height .35s; }
+  .evalbar.flipped .white { bottom: auto; top: 0; }
+  .evalbar .label { position: absolute; left: 0; right: 0; text-align: center; font-size: 10px; font-weight: 700; }
+  .evalbar .label.bottom { bottom: 3px; } .evalbar .label.top { top: 3px; }
+  .controls { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; max-width: 520px; }
   .chip { padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer; font-size: 13px; border: 1px solid transparent; color: var(--text); }
-  .chip.current { border-color: var(--accent); }
+  .chip.current { border-color: #fff; }
   .chip.q-best { color: var(--best); } .chip.q-good { color: var(--good); }
   .chip.q-inaccuracy { color: var(--inaccuracy); background: #4a4330; }
   .chip.q-mistake { color: var(--mistake); background: #4c3a2d; }
   .chip.q-blunder { color: var(--blunder); background: #4c2e2e; }
-  .qhead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }
-  .kv { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
-  .winbar { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; font-size: 14px; }
-  .winbar .track { flex: 1; height: 10px; background: #23272e; border-radius: 5px; overflow: hidden; position: relative; }
-  .winbar .fill { height: 100%; background: var(--best); }
-  .winbar .ghostfill { position: absolute; top: 0; left: 0; height: 100%; border-right: 2px dashed var(--muted); }
-  .explain { background: var(--panel2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; font-size: 15px; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-  ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
-  h3 { font-size: 15px; color: var(--accent); margin: 16px 0 6px; }
-  .cand { font-size: 14px; margin: 3px 0; }
-  .cand .line { color: var(--muted); }
+  .qhead { font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+  .kv { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+  .headline { font-size: 17px; margin: 10px 0 4px; }
+  .facts { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+  .cands { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .cand { background: var(--panel2); border-radius: 6px; padding: 4px 10px; font-size: 14px; cursor: help; }
+  .cand b { color: var(--best); }
+  h3 { font-size: 14px; color: var(--muted); margin: 18px 0 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
   .players { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
   .hidden { display: none; }
-  /* Chế độ phát lại đòn */
+  ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
+  /* Phát lại đòn */
   .replay { border: 2px solid var(--mistake); border-radius: 10px; padding: 14px; background: #3a3232; }
   .replay.better { border-color: var(--best); background: #2f3a33; }
-  .replay h3 { margin: 0 0 8px; color: inherit; font-size: 17px; }
+  .replay h3 { margin: 0 0 8px; color: var(--text); font-size: 17px; text-transform: none; letter-spacing: 0; }
   .replay .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
   .replay .step { padding: 4px 9px; border-radius: 6px; background: #23272e; font-size: 14px; cursor: pointer; border: 1px solid transparent; }
   .replay .step.current { border-color: #fff; font-weight: 700; }
   .replay .step.future { opacity: .35; }
-  .replay .note { font-size: 16px; min-height: 48px; padding: 10px 12px; background: #23272e; border-radius: 8px; margin: 8px 0; }
+  .replay .note { font-size: 17px; min-height: 52px; padding: 10px 12px; background: #23272e; border-radius: 8px; margin: 8px 0; }
   .replay .note b { color: var(--inaccuracy); }
-  .replay .hint { color: var(--muted); font-size: 13px; }
+  .replay .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
   /* Tổng kết */
-  .sumgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .sumgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
   .sumbox { background: var(--panel2); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
-  .sumbox h4 { margin: 0 0 6px; font-size: 15px; }
-  .big { font-size: 28px; font-weight: 700; }
+  .sumbox h4 { margin: 0 0 4px; font-size: 15px; }
+  .big { font-size: 30px; font-weight: 700; }
   .worst { cursor: pointer; text-decoration: underline dotted; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Chess XAI Tutor</h1>
-  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn. Phần mềm sẽ chỉ ra nước sai, cho bạn xem đối thủ trừng phạt thế nào, và giải thích bằng tiếng Việt.</p>
+  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn.</p>
 
   <div class="card">
-    <textarea id="pgn-input" placeholder="Dán PGN vào đây, ví dụ:
+    <textarea id="pgn-input" placeholder="Dán PGN vào đây...
 
 [Event &quot;Live Chess&quot;]
 [White &quot;mnhat2504&quot;]
 ...
-
 1. d4 d5 2. Bf4 Nf6 ..."></textarea>
     <div class="row">
       <button id="analyze-btn" onclick="startAnalyze()">Phân tích ván cờ</button>
@@ -103,12 +107,16 @@
       <div class="players" id="players"></div>
       <div class="layout">
         <div class="boardcol">
-          <img id="board" width="480" height="480" alt="Bàn cờ">
+          <div class="boardwrap">
+            <div class="evalbar" id="evalbar"><div class="white" id="evalwhite"></div><span class="label" id="evallabel"></span></div>
+            <img id="board" width="480" height="480" alt="Bàn cờ">
+          </div>
           <div class="controls">
-            <button class="ghost" onclick="go(position-1)">← Trước</button>
-            <button class="ghost" onclick="go(position+1)">Sau →</button>
-            <button class="ghost" onclick="nextError()">Nước sai kế tiếp</button>
-            <button class="ghost" onclick="go(0)">Về đầu</button>
+            <button class="ghost small" onclick="go(0)">|◀</button>
+            <button class="ghost small" onclick="go(position-1)">◀</button>
+            <button class="ghost small" onclick="go(position+1)">▶</button>
+            <button class="ghost small" onclick="nextError()">Nước sai kế tiếp</button>
+            <button class="ghost small" onclick="flipBoard()">Xoay bàn cờ</button>
           </div>
           <div class="movelist" id="movelist"></div>
         </div>
@@ -128,13 +136,13 @@ const QUALITY_TITLE = { best: "Nước tốt nhất", good: "Nước tốt", ina
 const ERRORS = new Set(["inaccuracy", "mistake", "blunder"]);
 const PHASE_VI = { opening: "khai cuộc", middlegame: "trung cuộc", endgame: "tàn cuộc" };
 const MOTIF_VI = { fork: "đòn đôi", pin: "ghim quân", skewer: "đòn xiên", discovered_attack: "đòn mở", discovered_check: "đòn mở chiếu", back_rank_mate: "chiếu hết tầng cuối" };
-let reports = [], total = 0, position = 0, jobId = null, initialFen = "", engine = "", done = false;
-let replay = null; // {kind:'punish'|'better', line:[...], startFen, index, played}
-let autoTimer = null;
+let reports = [], total = 0, position = 0, jobId = null, initialFen = "", done = false, flipped = false;
+let replay = null, autoTimer = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const winChance = cp => 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * cp)) - 1);
 
 $("file-input").addEventListener("change", ev => {
   const file = ev.target.files[0];
@@ -154,6 +162,7 @@ document.addEventListener("keydown", ev => {
   }
   if (ev.key === "ArrowLeft") go(position - 1);
   else if (ev.key === "ArrowRight") go(position + 1);
+  else if (ev.key === "f" || ev.key === "F") flipBoard();
 });
 
 function setStatus(text) { $("status").textContent = text; }
@@ -185,13 +194,13 @@ async function poll() {
   if (!resp.ok) { setStatus(data.error || "Mất kết nối phiên phân tích."); $("analyze-btn").disabled = false; return; }
   const hadNone = reports.length === 0;
   reports.push(...data.reports);
-  initialFen = data.initial_fen; engine = data.engine || engine;
+  initialFen = data.initial_fen;
   renderPlayers(data.headers);
   $("progress-bar").style.width = total ? (100 * reports.length / total) + "%" : "0";
   if (hadNone && reports.length > 0 && position === 0) go(1); else render();
   if (data.status === "done") {
     done = true;
-    setStatus(`Đã phân tích xong ${total} nước.`);
+    setStatus(`Xong ${total} nước.`);
     $("progress").style.display = "none";
     $("analyze-btn").disabled = false;
     renderSummary(data.summary);
@@ -200,7 +209,7 @@ async function poll() {
     setStatus("Phân tích dừng vì lỗi: " + (data.error_message || "?"));
     $("analyze-btn").disabled = false;
   } else {
-    setStatus(`Đang phân tích ${reports.length}/${total} nước...`);
+    setStatus(`Đang phân tích ${reports.length}/${total}...`);
     setTimeout(poll, 700);
   }
 }
@@ -209,8 +218,7 @@ function renderPlayers(headers) {
   if (!headers) return;
   const parts = [];
   if (headers.White || headers.Black) parts.push(`${headers.White || "?"} (Trắng) vs ${headers.Black || "?"} (Đen)`);
-  if (headers.Result) parts.push("Kết quả: " + headers.Result);
-  if (headers.Date) parts.push(headers.Date);
+  if (headers.Result) parts.push(headers.Result);
   $("players").textContent = parts.join("  ·  ");
 }
 
@@ -220,18 +228,47 @@ function go(newPosition) {
   render();
 }
 
+function flipBoard() { flipped = !flipped; render(); }
+
 function nextError() {
   for (let i = position; i < reports.length; i++) {
     if (ERRORS.has(reports[i].quality)) { go(i + 1); return; }
   }
-  setStatus(done ? "Không còn nước sai nào phía sau." : "Chưa thấy nước sai tiếp theo — phân tích vẫn đang chạy.");
+  setStatus(done ? "Không còn nước sai nào phía sau." : "Đang phân tích, chưa thấy nước sai tiếp theo.");
 }
 
 function setBoard(fen, lastmove, arrows) {
-  let url = `/board.svg?fen=${encodeURIComponent(fen)}&size=480`;
+  let url = `/board.svg?fen=${encodeURIComponent(fen)}&size=480&orientation=${flipped ? "black" : "white"}`;
   if (lastmove) url += `&lastmove=${lastmove}`;
   if (arrows) url += `&arrows=${encodeURIComponent(arrows)}`;
   $("board").src = url;
+}
+
+/* Thanh ưu thế: phần trắng = cơ hội thắng của Trắng ở thế đang xem */
+function setEvalBar(report) {
+  let whitePct = 50, label = "0.0";
+  if (report) {
+    const cp = report.side === "white" ? report.score : -report.score;   // theo góc nhìn Trắng
+    if (report.mate_in !== undefined && report.mate_in !== null) {
+      const m = report.side === "white" ? report.mate_in : -report.mate_in;
+      whitePct = m > 0 ? 100 : 0;
+      label = (m > 0 ? "M" : "-M") + Math.abs(m);
+    } else {
+      whitePct = Math.max(2, Math.min(98, winChance(cp)));
+      label = (cp >= 0 ? "+" : "") + (cp / 100).toFixed(1);
+    }
+  }
+  const bar = $("evalbar");
+  bar.classList.toggle("flipped", flipped);
+  $("evalwhite").style.height = whitePct + "%";
+  const lbl = $("evallabel");
+  lbl.textContent = label;
+  // Nhãn đặt ở phía bên đang có ưu thế, màu chữ tương phản với nền phía đó
+  const whiteAhead = whitePct >= 50;
+  const whiteAtBottom = !flipped;
+  const atBottom = whiteAhead === whiteAtBottom;
+  lbl.className = "label " + (atBottom ? "bottom" : "top");
+  lbl.style.color = whiteAhead ? "#222" : "#eee";
 }
 
 function render() {
@@ -241,59 +278,44 @@ function render() {
     if (current && ERRORS.has(current.quality) && current.best_move_uci) arrows = `${current.best_move_uci}:#5abe7aaa`;
     setBoard(current ? current.fen_after : initialFen, current ? current.move_uci : "", arrows);
   }
+  setEvalBar(current);
   renderMoveList();
   if (replay) { renderReplay(); return; }
 
   const info = $("infocol");
   if (!current) {
-    info.innerHTML = '<p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Nước sai kế tiếp" nhảy thẳng tới chỗ cần học.</p>';
+    info.innerHTML = '<p class="kv">Bấm vào một nước, hoặc dùng phím ← →. F để xoay bàn cờ.</p>';
     return;
   }
   const r = current;
   const isError = ERRORS.has(r.quality);
   const color = QUALITY_COLOR[r.quality] || "var(--text)";
   const number = r.side === "white" ? `${r.move_number}.` : `${r.move_number}...`;
-  const who = r.side === "white" ? "Trắng" : "Đen";
   let html = `<p class="qhead" style="color:${color}">${number} ${esc(r.move_san)} — ${QUALITY_TITLE[r.quality] || esc(r.quality_vi)}</p>`;
-  html += `<p class="kv">${who} vừa đi.${isError ? ` Nước tốt hơn: <b style="color:var(--best)">${esc(r.best_move_san)}</b> (mũi tên xanh trên bàn cờ).` : ""}</p>`;
-
-  if (r.win_chance !== undefined) {
-    const after = Math.round(r.win_chance), best = Math.round(r.win_chance_best);
-    html += `<div class="winbar"><span>Cơ hội thắng của ${who}</span><div class="track"><div class="fill" style="width:${after}%"></div>${isError ? `<div class="ghostfill" style="width:${best}%"></div>` : ""}</div><span><b>${after}%</b>${isError ? ` <span style="color:var(--muted)">(nếu đi ${esc(r.best_move_san)}: ${best}%)</span>` : ""}</span></div>`;
+  if (isError) {
+    let line = `Nên đi: <b style="color:var(--best)">${esc(r.best_move_san)}</b>`;
+    if (r.win_chance !== undefined) line += ` <span class="kv">· cơ hội thắng ${Math.round(r.win_chance_best)}% → ${Math.round(r.win_chance)}%</span>`;
+    html += `<p class="kv" style="font-size:15px">${line}</p>`;
   }
-
-  html += `<div class="explain">${esc(r.explanation_vi)}</div>`;
+  html += `<p class="headline">${esc(r.headline_vi || "")}</p>`;
+  const facts = (r.tactical_facts || []).slice(0, 2).map(cap);
+  if (facts.length && !(r.headline_vi || "").startsWith(facts[0].slice(0, 12))) {
+    html += `<p class="facts">${esc(facts.join(" · "))}</p>`;
+  }
 
   const actions = [];
-  if (isError && r.refutation_line && r.refutation_line.length) {
-    actions.push(`<button class="punish" onclick="startReplay('punish')">Xem đối thủ trừng phạt thế nào ▶</button>`);
-  }
-  if (isError && r.best_line && r.best_line.length) {
-    actions.push(`<button class="better" onclick="startReplay('better')">Xem nước nên đi ▶</button>`);
-  }
+  if (isError && r.refutation_line && r.refutation_line.length) actions.push(`<button class="punish" onclick="startReplay('punish')">Xem đòn trừng phạt ▶</button>`);
+  if (isError && r.best_line && r.best_line.length) actions.push(`<button class="better" onclick="startReplay('better')">Xem nước đúng ▶</button>`);
   if (actions.length) html += `<div class="actions">${actions.join("")}</div>`;
 
-  const facts = (r.tactical_facts || []).slice(0, 3);
-  if (facts.length) {
-    html += "<h3>Điều gì đang xảy ra trên bàn cờ</h3><ul>";
-    for (const fact of facts) html += `<li>${esc(cap(fact))}</li>`;
-    html += "</ul>";
-  }
-  const worse = (r.reasons || []).filter(x => x.delta < 0).map(x => x.label_vi);
-  const better = (r.reasons || []).filter(x => x.delta > 0).map(x => x.label_vi);
-  if (worse.length || better.length) {
-    html += `<p class="kv" style="margin-top:8px">`;
-    if (better.length) html += `Điểm cộng: ${esc(better.join(", "))}. `;
-    if (worse.length) html += `Điểm trừ: ${esc(worse.join(", "))}.`;
-    html += `</p>`;
-  }
   const candidates = (r.top_candidates || []).slice(0, 3);
   if (candidates.length) {
-    html += "<h3>Các nước đáng cân nhắc ở thế này</h3>";
+    html += `<h3>Nước đáng cân nhắc</h3><div class="cands">`;
     for (const c of candidates) {
-      const chance = c.win_chance !== undefined ? ` <span class="line">(cơ hội thắng ${Math.round(c.win_chance)}%)</span>` : "";
-      html += `<div class="cand"><b>${esc(c.move_san)}</b>${chance}${c.line_san ? ` <span class="line">— ${esc(c.line_san)}</span>` : ""}</div>`;
+      const chance = c.win_chance !== undefined ? ` ${Math.round(c.win_chance)}%` : "";
+      html += `<span class="cand" title="${esc(c.line_san || "")}"><b>${esc(c.move_san)}</b>${chance}</span>`;
     }
+    html += `</div>`;
   }
   info.innerHTML = html;
 }
@@ -316,18 +338,14 @@ function renderMoveList() {
 function startReplay(kind) {
   const r = reports[position - 1];
   if (!r) return;
-  const line = kind === "punish" ? r.refutation_line : r.best_line;
-  const startFen = kind === "punish" ? r.fen_after : r.fen;
-  replay = { kind, line, startFen, index: 0, played: r };
+  replay = { kind, line: kind === "punish" ? r.refutation_line : r.best_line, startFen: kind === "punish" ? r.fen_after : r.fen, index: 0, played: r };
   renderReplay();
 }
-
 function replayStep(delta) {
   if (!replay) return;
   replay.index = Math.max(0, Math.min(replay.index + delta, replay.line.length));
   renderReplay();
 }
-
 function toggleAuto() {
   if (autoTimer) { clearInterval(autoTimer); autoTimer = null; renderReplay(); return; }
   autoTimer = setInterval(() => {
@@ -336,51 +354,38 @@ function toggleAuto() {
   }, 1400);
   renderReplay();
 }
-
 function exitReplay(rerender = true) {
   if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
   replay = null;
   if (rerender) render();
 }
-
 function renderReplay() {
   const { kind, line, startFen, index, played } = replay;
   const step = index > 0 ? line[index - 1] : null;
-  const fen = step ? step.fen_after : startFen;
   const nextMove = index < line.length ? line[index] : null;
   const arrowColor = kind === "punish" ? "#ed7e43cc" : "#5abe7acc";
-  setBoard(fen, step ? step.move_uci : (kind === "punish" ? played.move_uci : ""), nextMove ? `${nextMove.move_uci}:${arrowColor}` : "");
+  setBoard(step ? step.fen_after : startFen, step ? step.move_uci : (kind === "punish" ? played.move_uci : ""), nextMove ? `${nextMove.move_uci}:${arrowColor}` : "");
 
-  const title = kind === "punish"
-    ? `Đối thủ trừng phạt ${esc(played.move_san)} như thế nào`
-    : `Nếu đi ${esc(played.best_move_san)} thay vì ${esc(played.move_san)}`;
-  let html = `<div class="replay ${kind === "better" ? "better" : ""}"><h3>${title}</h3>`;
-  html += `<div class="steps">`;
+  const title = kind === "punish" ? `Đối thủ trừng phạt ${esc(played.move_san)}` : `Nếu đi ${esc(played.best_move_san)}`;
+  let html = `<div class="replay ${kind === "better" ? "better" : ""}"><h3>${title}</h3><div class="steps">`;
   for (let i = 0; i < line.length; i++) {
     const cls = i === index - 1 ? "current" : (i < index - 1 ? "done" : "future");
     html += `<span class="step ${cls}" onclick="replay.index=${i + 1};renderReplay()">${esc(line[i].label)}</span>`;
   }
   html += `</div>`;
-
-  let noteHtml;
-  if (!step) {
-    noteHtml = kind === "punish"
-      ? `Bàn cờ đang ở thế sau nước <b>${esc(played.move_san)}</b>. Mũi tên cam là nước đối thủ sắp đi. Bấm <b>Nước tiếp ▶</b> để xem từng bước.`
-      : `Bàn cờ đang ở thế trước nước ${esc(played.move_san)}. Mũi tên xanh là nước nên đi. Bấm <b>Nước tiếp ▶</b> để xem diễn biến.`;
-  } else {
-    noteHtml = `<b>${esc(step.label)}</b>` + (step.note ? ` — ${esc(cap(step.note))}` : "");
-    if (index === line.length) noteHtml += kind === "punish"
-      ? ` <span class="hint">(hết biến — đây là thế đối thủ đạt được nếu chơi chính xác)</span>`
-      : ` <span class="hint">(hết biến)</span>`;
+  let note;
+  if (!step) note = `Mũi tên = nước sắp đi. Thử đoán trước, rồi bấm <b>▶</b>.`;
+  else {
+    note = `<b>${esc(step.label)}</b>` + (step.note ? ` — ${esc(cap(step.note))}` : "");
+    if (index === line.length) note += ` <span class="hint">(hết biến)</span>`;
   }
-  html += `<div class="note">${noteHtml}</div>`;
+  html += `<div class="note">${note}</div>`;
   html += `<div class="actions">
-    <button class="ghost small" onclick="replayStep(-1)" ${index === 0 ? "disabled" : ""}>◀ Lùi</button>
-    <button class="small" onclick="replayStep(1)" ${index >= line.length ? "disabled" : ""}>Nước tiếp ▶</button>
-    <button class="ghost small" onclick="toggleAuto()">${autoTimer ? "⏸ Dừng tự chạy" : "▶▶ Tự chạy"}</button>
-    <button class="ghost small" onclick="exitReplay()">Quay lại ván cờ</button>
-  </div>`;
-  html += `<p class="hint">Mẹo học: trước khi bấm "Nước tiếp", thử tự đoán đối thủ sẽ đi gì. Dùng phím ← → hoặc Esc để thoát.</p></div>`;
+    <button class="ghost small" onclick="replayStep(-1)" ${index === 0 ? "disabled" : ""}>◀</button>
+    <button class="small" onclick="replayStep(1)" ${index >= line.length ? "disabled" : ""}>▶ Nước tiếp</button>
+    <button class="ghost small" onclick="toggleAuto()">${autoTimer ? "⏸ Dừng" : "▶▶ Tự chạy"}</button>
+    <button class="ghost small" onclick="exitReplay()">Quay lại</button>
+  </div></div>`;
   $("infocol").innerHTML = html;
 }
 
@@ -396,22 +401,14 @@ function renderSummary(summary) {
     const errs = [];
     if (c.inaccuracy) errs.push(`${c.inaccuracy} thiếu chính xác`);
     if (c.mistake) errs.push(`${c.mistake} sai lầm`);
-    if (c.blunder) errs.push(`${c.blunder} sai lầm nghiêm trọng`);
-    html += `<div class="sumbox"><h4>${sideName[side]}</h4><div class="big">${Math.round(s.accuracy)}%</div><div>độ chính xác trên ${s.moves} nước</div><div style="margin-top:6px">${errs.length ? errs.join(", ") : "Không có lỗi đáng kể — chơi rất tốt!"}</div></div>`;
+    if (c.blunder) errs.push(`${c.blunder} nghiêm trọng`);
+    html += `<div class="sumbox"><h4>${sideName[side]}</h4><div class="big">${Math.round(s.accuracy)}%</div><div class="kv">độ chính xác · ${errs.length ? errs.join(", ") : "không có lỗi đáng kể"}</div></div>`;
   }
   html += `</div>`;
-
-  const phases = summary.phase_errors || {};
-  const phaseParts = Object.keys(PHASE_VI).filter(k => phases[k] && (phases[k].white || phases[k].black))
-    .map(k => `${PHASE_VI[k]}: Trắng ${phases[k].white}, Đen ${phases[k].black}`);
-  if (phaseParts.length) html += `<p class="kv" style="margin-top:12px"><b>Lỗi rơi vào giai đoạn nào?</b> ${esc(phaseParts.join(" · "))}</p>`;
-
   const worst = summary.worst_moves || [];
   if (worst.length) {
-    html += `<h3>Những nước nên xem lại (bấm để nhảy tới)</h3><ul>`;
-    for (const w of worst) {
-      html += `<li><span class="worst" onclick="go(${w.ply})">${esc(w.label)}</span> — ${esc(w.quality_vi)} ở ${PHASE_VI[w.phase] || ""}</li>`;
-    }
+    html += `<h3>Nên xem lại</h3><ul>`;
+    for (const w of worst) html += `<li><span class="worst" onclick="go(${w.ply})">${esc(w.label)}</span> — ${esc(w.quality_vi)}, ${PHASE_VI[w.phase] || ""}</li>`;
     html += `</ul>`;
   }
   const motifParts = [];
@@ -419,8 +416,7 @@ function renderSummary(summary) {
     const m = (summary[side] || {}).allowed_motifs || {};
     for (const k in m) motifParts.push(`${sideName[side]} để hở ${MOTIF_VI[k] || k} ${m[k]} lần`);
   }
-  if (motifParts.length) html += `<p class="kv"><b>Chủ đề chiến thuật nên luyện:</b> ${esc(motifParts.join("; "))}. Hãy xem lại các nước đó bằng nút "Xem đối thủ trừng phạt thế nào" để quen mắt với đòn này.</p>`;
-
+  if (motifParts.length) html += `<h3>Nên luyện</h3><p class="kv">${esc(motifParts.join(" · "))}</p>`;
   $("summarybody").innerHTML = html;
   $("summarycard").classList.remove("hidden");
 }

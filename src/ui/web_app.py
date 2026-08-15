@@ -187,7 +187,11 @@ def create_app(
             except ValueError:
                 continue
             arrows.append(chess.svg.Arrow(move.from_square, move.to_square, color=color or "#5bc0de99"))
-        svg = chess.svg.board(board=board, lastmove=lastmove, check=check_square, arrows=arrows, size=size)
+        orientation = chess.BLACK if request.args.get("orientation") == "black" else chess.WHITE
+        svg = chess.svg.board(
+            board=board, lastmove=lastmove, check=check_square, arrows=arrows,
+            size=size, orientation=orientation,
+        )
         return Response(svg, mimetype="image/svg+xml")
 
     return app

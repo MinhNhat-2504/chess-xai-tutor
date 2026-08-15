@@ -179,6 +179,7 @@ class MoveExplainer:
             "tactical_facts": tactical_facts,
             "motifs": [m.to_dict() for m in motifs],
             "explanation_vi": text,
+            "headline_vi": self._headline(quality, tactical_facts, reasons, extras.get("opponent_motifs", [])),
             "method": scored["method"],
         }
         report.update(scored["extras"])
@@ -414,6 +415,27 @@ class MoveExplainer:
         if refutation:
             text += f" Đối thủ có thể trừng phạt bằng: {refutation}."
         return text
+
+    @staticmethod
+    def _headline(quality, facts, reasons, opponent_motifs) -> str:
+        """Một câu ngắn nói lý do chính — cho UI ít chữ."""
+        def cap(text):
+            return text[0].upper() + text[1:] if text else text
+        if quality.label in {"best", "good"}:
+            if facts:
+                return cap(facts[0]) + "."
+            improved = [r["label_vi"] for r in reasons if r["delta"] > 0]
+            return f"Cải thiện {', '.join(improved[:2])}." if improved else "Nước hợp lý, giữ thế trận ổn định."
+        if opponent_motifs:
+            labels = ", ".join(dict.fromkeys(m["label_vi"] for m in opponent_motifs))
+            return f"Mở đường cho đối thủ tạo {labels}."
+        hanging = [f for f in facts if "treo" in f]
+        if hanging:
+            return cap(hanging[0].removeprefix("nhưng ").strip()) + "."
+        worsened = [r["label_vi"] for r in reasons if r["delta"] < 0]
+        if worsened:
+            return f"Thế trận yếu đi ở {', '.join(worsened[:2])}."
+        return "Bỏ lỡ nước mạnh hơn nhiều."
 
     @staticmethod
     def _pawn_units(piece_type: int) -> str:
