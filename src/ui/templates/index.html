@@ -6,83 +6,90 @@
 <title>Chess XAI Tutor — Phân tích ván cờ</title>
 <style>
   :root {
-    --bg: #282c34; --panel: #343a45; --panel2: #3d4450; --text: #dcdcdc;
+    --bg: #282c34; --panel: #343a45; --panel2: #3d4450; --text: #e4e4e4;
     --muted: #a8aeb8; --accent: #5bc0de; --border: #4e5663;
     --best: #5abe7a; --good: #5bc0de; --inaccuracy: #ebba49;
     --mistake: #ed7e43; --blunder: #df4f4f;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5;
-  }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5; }
   .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 60px; }
   h1 { font-size: 26px; margin: 0 0 4px; }
   .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
-  textarea {
-    width: 100%; min-height: 150px; background: #23272e; color: var(--text);
-    border: 1px solid var(--border); border-radius: 8px; padding: 10px;
-    font-family: Consolas, monospace; font-size: 13px; resize: vertical;
-  }
+  textarea { width: 100%; min-height: 150px; background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; resize: vertical; }
   .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-  button {
-    background: var(--accent); color: #16323c; border: 0; border-radius: 8px;
-    padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
-  }
+  button { background: var(--accent); color: #16323c; border: 0; border-radius: 8px; padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; }
   button:hover { filter: brightness(1.1); }
   button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); font-weight: 400; }
+  button.small { padding: 6px 12px; font-size: 14px; }
+  button.punish { background: var(--mistake); color: #2b1a10; }
+  button.better { background: var(--best); color: #10301c; }
   button:disabled { opacity: .45; cursor: default; }
   input[type=file] { display: none; }
-  .filelabel {
-    background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 16px; cursor: pointer; font-size: 14px;
-  }
+  .filelabel { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 14px; }
   #status { color: var(--muted); font-size: 14px; }
   .progress { height: 6px; background: #23272e; border-radius: 3px; overflow: hidden; margin-top: 10px; display: none; }
   .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .4s; }
   #results { display: none; }
-  .layout { display: flex; gap: 18px; flex-wrap: wrap; }
+  .layout { display: flex; gap: 20px; flex-wrap: wrap; }
   .boardcol { flex: 0 0 auto; }
   .infocol { flex: 1 1 320px; min-width: 300px; }
   #board { border-radius: 8px; display: block; max-width: 100%; }
   .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; }
-  .chip {
-    padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer;
-    font-size: 13px; border: 1px solid transparent; color: var(--text);
-  }
+  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; max-width: 480px; }
+  .chip { padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer; font-size: 13px; border: 1px solid transparent; color: var(--text); }
   .chip.current { border-color: var(--accent); }
   .chip.q-best { color: var(--best); } .chip.q-good { color: var(--good); }
   .chip.q-inaccuracy { color: var(--inaccuracy); background: #4a4330; }
   .chip.q-mistake { color: var(--mistake); background: #4c3a2d; }
   .chip.q-blunder { color: var(--blunder); background: #4c2e2e; }
-  .qhead { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
-  .kv { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
-  .explain { background: var(--panel2); border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 15px; }
-  .refute { color: var(--mistake); font-size: 14px; margin: 8px 0; }
+  .qhead { font-size: 21px; font-weight: 700; margin: 0 0 4px; }
+  .kv { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+  .winbar { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; font-size: 14px; }
+  .winbar .track { flex: 1; height: 10px; background: #23272e; border-radius: 5px; overflow: hidden; position: relative; }
+  .winbar .fill { height: 100%; background: var(--best); }
+  .winbar .ghostfill { position: absolute; top: 0; left: 0; height: 100%; border-right: 2px dashed var(--muted); }
+  .explain { background: var(--panel2); border-radius: 8px; padding: 12px 14px; margin: 10px 0; font-size: 15px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
   ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
+  h3 { font-size: 15px; color: var(--accent); margin: 16px 0 6px; }
   .cand { font-size: 14px; margin: 3px 0; }
   .cand .line { color: var(--muted); }
-  h3 { font-size: 15px; color: var(--accent); margin: 16px 0 6px; }
-  #summarycard ul { font-size: 15px; }
   .players { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
   .hidden { display: none; }
+  /* Chế độ phát lại đòn */
+  .replay { border: 2px solid var(--mistake); border-radius: 10px; padding: 14px; background: #3a3232; }
+  .replay.better { border-color: var(--best); background: #2f3a33; }
+  .replay h3 { margin: 0 0 8px; color: inherit; font-size: 17px; }
+  .replay .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .replay .step { padding: 4px 9px; border-radius: 6px; background: #23272e; font-size: 14px; cursor: pointer; border: 1px solid transparent; }
+  .replay .step.current { border-color: #fff; font-weight: 700; }
+  .replay .step.future { opacity: .35; }
+  .replay .note { font-size: 16px; min-height: 48px; padding: 10px 12px; background: #23272e; border-radius: 8px; margin: 8px 0; }
+  .replay .note b { color: var(--inaccuracy); }
+  .replay .hint { color: var(--muted); font-size: 13px; }
+  /* Tổng kết */
+  .sumgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .sumbox { background: var(--panel2); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+  .sumbox h4 { margin: 0 0 6px; font-size: 15px; }
+  .big { font-size: 28px; font-weight: 700; }
+  .worst { cursor: pointer; text-decoration: underline dotted; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Chess XAI Tutor</h1>
-  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn — phần mềm phân tích bằng Stockfish và giải thích từng nước bằng tiếng Việt.</p>
+  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn. Phần mềm sẽ chỉ ra nước sai, cho bạn xem đối thủ trừng phạt thế nào, và giải thích bằng tiếng Việt.</p>
 
   <div class="card">
-    <textarea id="pgn-input" placeholder='Dán PGN vào đây, ví dụ:
+    <textarea id="pgn-input" placeholder="Dán PGN vào đây, ví dụ:
 
-[Event "Live Chess"]
-[White "mnhat2504"]
+[Event &quot;Live Chess&quot;]
+[White &quot;mnhat2504&quot;]
 ...
 
-1. d4 d5 2. Bf4 Nf6 ...'></textarea>
+1. d4 d5 2. Bf4 Nf6 ..."></textarea>
     <div class="row">
       <button id="analyze-btn" onclick="startAnalyze()">Phân tích ván cờ</button>
       <label class="filelabel">Chọn file .pgn<input type="file" id="file-input" accept=".pgn,.txt"></label>
@@ -100,30 +107,34 @@
           <div class="controls">
             <button class="ghost" onclick="go(position-1)">← Trước</button>
             <button class="ghost" onclick="go(position+1)">Sau →</button>
-            <button class="ghost" onclick="nextError()">Lỗi kế</button>
+            <button class="ghost" onclick="nextError()">Nước sai kế tiếp</button>
             <button class="ghost" onclick="go(0)">Về đầu</button>
           </div>
           <div class="movelist" id="movelist"></div>
         </div>
-        <div class="infocol" id="infocol">
-          <p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Lỗi kế" nhảy thẳng tới nước sai tiếp theo.</p>
-        </div>
+        <div class="infocol" id="infocol"></div>
       </div>
     </div>
     <div class="card hidden" id="summarycard">
       <h3 style="margin-top:0">Tổng kết ván</h3>
-      <ul id="summarylines"></ul>
+      <div id="summarybody"></div>
     </div>
   </div>
 </div>
 
 <script>
 const QUALITY_COLOR = { best: "var(--best)", good: "var(--good)", inaccuracy: "var(--inaccuracy)", mistake: "var(--mistake)", blunder: "var(--blunder)" };
+const QUALITY_TITLE = { best: "Nước tốt nhất", good: "Nước tốt", inaccuracy: "Thiếu chính xác", mistake: "Sai lầm", blunder: "Sai lầm nghiêm trọng" };
 const ERRORS = new Set(["inaccuracy", "mistake", "blunder"]);
+const PHASE_VI = { opening: "khai cuộc", middlegame: "trung cuộc", endgame: "tàn cuộc" };
+const MOTIF_VI = { fork: "đòn đôi", pin: "ghim quân", skewer: "đòn xiên", discovered_attack: "đòn mở", discovered_check: "đòn mở chiếu", back_rank_mate: "chiếu hết tầng cuối" };
 let reports = [], total = 0, position = 0, jobId = null, initialFen = "", engine = "", done = false;
+let replay = null; // {kind:'punish'|'better', line:[...], startFen, index, played}
+let autoTimer = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 $("file-input").addEventListener("change", ev => {
   const file = ev.target.files[0];
@@ -135,6 +146,12 @@ $("file-input").addEventListener("change", ev => {
 
 document.addEventListener("keydown", ev => {
   if (ev.target.tagName === "TEXTAREA") return;
+  if (replay) {
+    if (ev.key === "ArrowRight") replayStep(1);
+    else if (ev.key === "ArrowLeft") replayStep(-1);
+    else if (ev.key === "Escape") exitReplay();
+    return;
+  }
   if (ev.key === "ArrowLeft") go(position - 1);
   else if (ev.key === "ArrowRight") go(position + 1);
 });
@@ -147,15 +164,11 @@ async function startAnalyze() {
   $("analyze-btn").disabled = true;
   setStatus("Đang gửi ván cờ...");
   try {
-    const resp = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ pgn: text }),
-    });
+    const resp = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ pgn: text }) });
     const data = await resp.json();
     if (!resp.ok) { setStatus(data.error || "Có lỗi khi đọc PGN."); $("analyze-btn").disabled = false; return; }
     jobId = data.job_id; total = data.total;
-    reports = []; position = 0; done = false;
+    reports = []; position = 0; done = false; exitReplay(false);
     $("results").style.display = "block";
     $("summarycard").classList.add("hidden");
     $("progress").style.display = "block";
@@ -178,16 +191,16 @@ async function poll() {
   if (hadNone && reports.length > 0 && position === 0) go(1); else render();
   if (data.status === "done") {
     done = true;
-    setStatus(`Đã phân tích ${total} nước — engine: ${engine}`);
+    setStatus(`Đã phân tích xong ${total} nước.`);
     $("progress").style.display = "none";
     $("analyze-btn").disabled = false;
-    renderSummary(data.summary_lines || []);
+    renderSummary(data.summary);
     render();
   } else if (data.status === "error") {
     setStatus("Phân tích dừng vì lỗi: " + (data.error_message || "?"));
     $("analyze-btn").disabled = false;
   } else {
-    setStatus(`Đang phân tích ${reports.length}/${total} nước — engine: ${engine}`);
+    setStatus(`Đang phân tích ${reports.length}/${total} nước...`);
     setTimeout(poll, 700);
   }
 }
@@ -202,6 +215,7 @@ function renderPlayers(headers) {
 }
 
 function go(newPosition) {
+  exitReplay(false);
   position = Math.max(0, Math.min(newPosition, reports.length));
   render();
 }
@@ -210,77 +224,204 @@ function nextError() {
   for (let i = position; i < reports.length; i++) {
     if (ERRORS.has(reports[i].quality)) { go(i + 1); return; }
   }
-  setStatus(done ? "Không còn nước lỗi nào phía sau." : "Chưa thấy lỗi tiếp theo — phân tích vẫn đang chạy.");
+  setStatus(done ? "Không còn nước sai nào phía sau." : "Chưa thấy nước sai tiếp theo — phân tích vẫn đang chạy.");
+}
+
+function setBoard(fen, lastmove, arrows) {
+  let url = `/board.svg?fen=${encodeURIComponent(fen)}&size=480`;
+  if (lastmove) url += `&lastmove=${lastmove}`;
+  if (arrows) url += `&arrows=${encodeURIComponent(arrows)}`;
+  $("board").src = url;
 }
 
 function render() {
-  let fen = initialFen, lastmove = "";
-  if (position > 0 && reports[position - 1]) {
-    fen = reports[position - 1].fen_after;
-    lastmove = reports[position - 1].move_uci;
+  const current = position > 0 ? reports[position - 1] : null;
+  if (!replay) {
+    let arrows = "";
+    if (current && ERRORS.has(current.quality) && current.best_move_uci) arrows = `${current.best_move_uci}:#5abe7aaa`;
+    setBoard(current ? current.fen_after : initialFen, current ? current.move_uci : "", arrows);
   }
-  $("board").src = `/board.svg?fen=${encodeURIComponent(fen)}&lastmove=${lastmove}&size=480`;
+  renderMoveList();
+  if (replay) { renderReplay(); return; }
 
+  const info = $("infocol");
+  if (!current) {
+    info.innerHTML = '<p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Nước sai kế tiếp" nhảy thẳng tới chỗ cần học.</p>';
+    return;
+  }
+  const r = current;
+  const isError = ERRORS.has(r.quality);
+  const color = QUALITY_COLOR[r.quality] || "var(--text)";
+  const number = r.side === "white" ? `${r.move_number}.` : `${r.move_number}...`;
+  const who = r.side === "white" ? "Trắng" : "Đen";
+  let html = `<p class="qhead" style="color:${color}">${number} ${esc(r.move_san)} — ${QUALITY_TITLE[r.quality] || esc(r.quality_vi)}</p>`;
+  html += `<p class="kv">${who} vừa đi.${isError ? ` Nước tốt hơn: <b style="color:var(--best)">${esc(r.best_move_san)}</b> (mũi tên xanh trên bàn cờ).` : ""}</p>`;
+
+  if (r.win_chance !== undefined) {
+    const after = Math.round(r.win_chance), best = Math.round(r.win_chance_best);
+    html += `<div class="winbar"><span>Cơ hội thắng của ${who}</span><div class="track"><div class="fill" style="width:${after}%"></div>${isError ? `<div class="ghostfill" style="width:${best}%"></div>` : ""}</div><span><b>${after}%</b>${isError ? ` <span style="color:var(--muted)">(nếu đi ${esc(r.best_move_san)}: ${best}%)</span>` : ""}</span></div>`;
+  }
+
+  html += `<div class="explain">${esc(r.explanation_vi)}</div>`;
+
+  const actions = [];
+  if (isError && r.refutation_line && r.refutation_line.length) {
+    actions.push(`<button class="punish" onclick="startReplay('punish')">Xem đối thủ trừng phạt thế nào ▶</button>`);
+  }
+  if (isError && r.best_line && r.best_line.length) {
+    actions.push(`<button class="better" onclick="startReplay('better')">Xem nước nên đi ▶</button>`);
+  }
+  if (actions.length) html += `<div class="actions">${actions.join("")}</div>`;
+
+  const facts = (r.tactical_facts || []).slice(0, 3);
+  if (facts.length) {
+    html += "<h3>Điều gì đang xảy ra trên bàn cờ</h3><ul>";
+    for (const fact of facts) html += `<li>${esc(cap(fact))}</li>`;
+    html += "</ul>";
+  }
+  const worse = (r.reasons || []).filter(x => x.delta < 0).map(x => x.label_vi);
+  const better = (r.reasons || []).filter(x => x.delta > 0).map(x => x.label_vi);
+  if (worse.length || better.length) {
+    html += `<p class="kv" style="margin-top:8px">`;
+    if (better.length) html += `Điểm cộng: ${esc(better.join(", "))}. `;
+    if (worse.length) html += `Điểm trừ: ${esc(worse.join(", "))}.`;
+    html += `</p>`;
+  }
+  const candidates = (r.top_candidates || []).slice(0, 3);
+  if (candidates.length) {
+    html += "<h3>Các nước đáng cân nhắc ở thế này</h3>";
+    for (const c of candidates) {
+      const chance = c.win_chance !== undefined ? ` <span class="line">(cơ hội thắng ${Math.round(c.win_chance)}%)</span>` : "";
+      html += `<div class="cand"><b>${esc(c.move_san)}</b>${chance}${c.line_san ? ` <span class="line">— ${esc(c.line_san)}</span>` : ""}</div>`;
+    }
+  }
+  info.innerHTML = html;
+}
+
+function renderMoveList() {
   const list = $("movelist");
   list.innerHTML = "";
   for (let i = 0; i < reports.length; i++) {
     const r = reports[i];
     const chip = document.createElement("span");
     chip.className = `chip q-${r.quality}` + (i + 1 === position ? " current" : "");
-    const prefix = r.side === "white" ? r.move_number + "." : "";
-    chip.textContent = prefix + r.move_san;
+    chip.textContent = (r.side === "white" ? r.move_number + "." : "") + r.move_san;
+    chip.title = QUALITY_TITLE[r.quality] || "";
     chip.onclick = () => go(i + 1);
     list.appendChild(chip);
   }
-
-  const info = $("infocol");
-  if (position === 0 || !reports[position - 1]) {
-    info.innerHTML = '<p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← → để duyệt. Nút "Lỗi kế" nhảy thẳng tới nước sai tiếp theo.</p>';
-    return;
-  }
-  const r = reports[position - 1];
-  const color = QUALITY_COLOR[r.quality] || "var(--text)";
-  const number = r.side === "white" ? `${r.move_number}.` : `${r.move_number}...`;
-  let html = `<p class="qhead" style="color:${color}">${number} ${esc(r.move_san)} — ${esc(r.quality_vi).toUpperCase()}</p>`;
-  const kv = [`Thiệt hại: ${Math.round(r.centipawn_loss)}`, `Nước tốt hơn: ${esc(r.best_move_san)}`];
-  if (r.win_chance !== undefined) kv.push(`Cơ hội thắng: ${Math.round(r.win_chance)}% (tốt nhất: ${Math.round(r.win_chance_best)}%)`);
-  html += `<p class="kv">${kv.join("  ·  ")}</p>`;
-  html += `<div class="explain">${esc(r.explanation_vi)}</div>`;
-  if (ERRORS.has(r.quality) && r.refutation_san) {
-    html += `<p class="refute">Đòn trừng phạt: ${esc(r.refutation_san)}</p>`;
-  }
-  const facts = (r.tactical_facts || []).slice(0, 3);
-  const reasons = (r.reasons || []).slice(0, 3);
-  if (facts.length || reasons.length) {
-    html += "<h3>Vì sao?</h3><ul>";
-    for (const fact of facts) html += `<li>${esc(fact)}</li>`;
-    for (const reason of reasons) {
-      const sign = reason.delta >= 0 ? "+" : "";
-      html += `<li>${esc(reason.label_vi)}: ${sign}${Math.round(reason.delta)}</li>`;
-    }
-    html += "</ul>";
-  }
-  const candidates = r.top_candidates || [];
-  if (candidates.length) {
-    html += "<h3>Top phương án</h3>";
-    for (const candidate of candidates) {
-      html += `<div class="cand"><b>${esc(candidate.move_san)}</b>: ${candidate.score >= 0 ? "+" : ""}${Math.round(candidate.score)}`;
-      if (candidate.line_san) html += ` <span class="line">${esc(candidate.line_san)}</span>`;
-      html += "</div>";
-    }
-  }
-  info.innerHTML = html;
 }
 
-function renderSummary(lines) {
-  if (!lines.length) return;
-  const list = $("summarylines");
-  list.innerHTML = "";
-  for (const line of lines) {
-    const item = document.createElement("li");
-    item.textContent = line;
-    list.appendChild(item);
+/* ---------- Phát lại đòn trên bàn cờ ---------- */
+function startReplay(kind) {
+  const r = reports[position - 1];
+  if (!r) return;
+  const line = kind === "punish" ? r.refutation_line : r.best_line;
+  const startFen = kind === "punish" ? r.fen_after : r.fen;
+  replay = { kind, line, startFen, index: 0, played: r };
+  renderReplay();
+}
+
+function replayStep(delta) {
+  if (!replay) return;
+  replay.index = Math.max(0, Math.min(replay.index + delta, replay.line.length));
+  renderReplay();
+}
+
+function toggleAuto() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; renderReplay(); return; }
+  autoTimer = setInterval(() => {
+    if (!replay || replay.index >= replay.line.length) { clearInterval(autoTimer); autoTimer = null; if (replay) renderReplay(); return; }
+    replayStep(1);
+  }, 1400);
+  renderReplay();
+}
+
+function exitReplay(rerender = true) {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  replay = null;
+  if (rerender) render();
+}
+
+function renderReplay() {
+  const { kind, line, startFen, index, played } = replay;
+  const step = index > 0 ? line[index - 1] : null;
+  const fen = step ? step.fen_after : startFen;
+  const nextMove = index < line.length ? line[index] : null;
+  const arrowColor = kind === "punish" ? "#ed7e43cc" : "#5abe7acc";
+  setBoard(fen, step ? step.move_uci : (kind === "punish" ? played.move_uci : ""), nextMove ? `${nextMove.move_uci}:${arrowColor}` : "");
+
+  const title = kind === "punish"
+    ? `Đối thủ trừng phạt ${esc(played.move_san)} như thế nào`
+    : `Nếu đi ${esc(played.best_move_san)} thay vì ${esc(played.move_san)}`;
+  let html = `<div class="replay ${kind === "better" ? "better" : ""}"><h3>${title}</h3>`;
+  html += `<div class="steps">`;
+  for (let i = 0; i < line.length; i++) {
+    const cls = i === index - 1 ? "current" : (i < index - 1 ? "done" : "future");
+    html += `<span class="step ${cls}" onclick="replay.index=${i + 1};renderReplay()">${esc(line[i].label)}</span>`;
   }
+  html += `</div>`;
+
+  let noteHtml;
+  if (!step) {
+    noteHtml = kind === "punish"
+      ? `Bàn cờ đang ở thế sau nước <b>${esc(played.move_san)}</b>. Mũi tên cam là nước đối thủ sắp đi. Bấm <b>Nước tiếp ▶</b> để xem từng bước.`
+      : `Bàn cờ đang ở thế trước nước ${esc(played.move_san)}. Mũi tên xanh là nước nên đi. Bấm <b>Nước tiếp ▶</b> để xem diễn biến.`;
+  } else {
+    noteHtml = `<b>${esc(step.label)}</b>` + (step.note ? ` — ${esc(cap(step.note))}` : "");
+    if (index === line.length) noteHtml += kind === "punish"
+      ? ` <span class="hint">(hết biến — đây là thế đối thủ đạt được nếu chơi chính xác)</span>`
+      : ` <span class="hint">(hết biến)</span>`;
+  }
+  html += `<div class="note">${noteHtml}</div>`;
+  html += `<div class="actions">
+    <button class="ghost small" onclick="replayStep(-1)" ${index === 0 ? "disabled" : ""}>◀ Lùi</button>
+    <button class="small" onclick="replayStep(1)" ${index >= line.length ? "disabled" : ""}>Nước tiếp ▶</button>
+    <button class="ghost small" onclick="toggleAuto()">${autoTimer ? "⏸ Dừng tự chạy" : "▶▶ Tự chạy"}</button>
+    <button class="ghost small" onclick="exitReplay()">Quay lại ván cờ</button>
+  </div>`;
+  html += `<p class="hint">Mẹo học: trước khi bấm "Nước tiếp", thử tự đoán đối thủ sẽ đi gì. Dùng phím ← → hoặc Esc để thoát.</p></div>`;
+  $("infocol").innerHTML = html;
+}
+
+/* ---------- Tổng kết ván ---------- */
+function renderSummary(summary) {
+  if (!summary) return;
+  const sideName = { white: "Trắng", black: "Đen" };
+  let html = `<div class="sumgrid">`;
+  for (const side of ["white", "black"]) {
+    const s = summary[side];
+    if (!s || !s.moves) continue;
+    const c = s.counts || {};
+    const errs = [];
+    if (c.inaccuracy) errs.push(`${c.inaccuracy} thiếu chính xác`);
+    if (c.mistake) errs.push(`${c.mistake} sai lầm`);
+    if (c.blunder) errs.push(`${c.blunder} sai lầm nghiêm trọng`);
+    html += `<div class="sumbox"><h4>${sideName[side]}</h4><div class="big">${Math.round(s.accuracy)}%</div><div>độ chính xác trên ${s.moves} nước</div><div style="margin-top:6px">${errs.length ? errs.join(", ") : "Không có lỗi đáng kể — chơi rất tốt!"}</div></div>`;
+  }
+  html += `</div>`;
+
+  const phases = summary.phase_errors || {};
+  const phaseParts = Object.keys(PHASE_VI).filter(k => phases[k] && (phases[k].white || phases[k].black))
+    .map(k => `${PHASE_VI[k]}: Trắng ${phases[k].white}, Đen ${phases[k].black}`);
+  if (phaseParts.length) html += `<p class="kv" style="margin-top:12px"><b>Lỗi rơi vào giai đoạn nào?</b> ${esc(phaseParts.join(" · "))}</p>`;
+
+  const worst = summary.worst_moves || [];
+  if (worst.length) {
+    html += `<h3>Những nước nên xem lại (bấm để nhảy tới)</h3><ul>`;
+    for (const w of worst) {
+      html += `<li><span class="worst" onclick="go(${w.ply})">${esc(w.label)}</span> — ${esc(w.quality_vi)} ở ${PHASE_VI[w.phase] || ""}</li>`;
+    }
+    html += `</ul>`;
+  }
+  const motifParts = [];
+  for (const side of ["white", "black"]) {
+    const m = (summary[side] || {}).allowed_motifs || {};
+    for (const k in m) motifParts.push(`${sideName[side]} để hở ${MOTIF_VI[k] || k} ${m[k]} lần`);
+  }
+  if (motifParts.length) html += `<p class="kv"><b>Chủ đề chiến thuật nên luyện:</b> ${esc(motifParts.join("; "))}. Hãy xem lại các nước đó bằng nút "Xem đối thủ trừng phạt thế nào" để quen mắt với đòn này.</p>`;
+
+  $("summarybody").innerHTML = html;
   $("summarycard").classList.remove("hidden");
 }
 </script>

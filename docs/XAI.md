@@ -65,12 +65,27 @@ Mỗi báo cáo gồm:
 python scripts/web_app.py
 ```
 
-Mở trình duyệt tại `http://127.0.0.1:8000`, dán PGN (Chess.com: vào ván đấu →
-Share → tab PGN → copy) hoặc chọn file `.pgn`, bấm **Phân tích ván cờ**. Kết
-quả hiện dần từng nước trong lúc phân tích chạy nền: bàn cờ SVG, danh sách
-nước tô màu theo chất lượng, câu giải thích tiếng Việt, đòn trừng phạt, top
-phương án kèm biến chính, và thẻ tổng kết ván khi xong. Điều hướng bằng phím
-`←`/`→`, nút "Lỗi kế" nhảy tới nước sai tiếp theo.
+Mở trình duyệt tại địa chỉ script in ra (mặc định `http://127.0.0.1:8000`;
+nếu cổng bị Windows chặn, script tự chọn cổng khác), dán PGN (Chess.com: vào
+ván đấu → Share → tab PGN → copy) hoặc chọn file `.pgn`, bấm **Phân tích ván
+cờ**. Kết quả hiện dần từng nước trong lúc phân tích chạy nền.
+
+Giao diện được thiết kế cho người học, không dùng thuật ngữ kỹ thuật:
+
+- Mỗi nước: nhãn chất lượng, **thanh cơ hội thắng** (so với nếu đi nước tốt
+  nhất), câu giải thích tiếng Việt, "điều gì đang xảy ra trên bàn cờ" (đòn
+  đôi, ghim, ăn quân, chiếu...), điểm cộng/điểm trừ về thế trận, các nước đáng
+  cân nhắc kèm cơ hội thắng.
+- Với nước sai: mũi tên xanh chỉ nước nên đi, và hai nút **"Xem đối thủ trừng
+  phạt thế nào ▶"** / **"Xem nước nên đi ▶"** phát lại biến **từng bước ngay
+  trên bàn cờ**, mỗi bước có mũi tên và chú thích ("đòn đôi: mã c2 tấn công
+  cùng lúc xe a1 và vua e1", "ăn xe (5 điểm)", "chiếu hết"). Có chế độ tự chạy,
+  và gợi ý người học tự đoán nước kế tiếp trước khi bấm — đây là cách luyện mắt
+  nhìn đòn chiến thuật, không chỉ biết mình đã blunder.
+- Tổng kết ván: độ chính xác từng bên, lỗi theo giai đoạn, danh sách nước nên
+  xem lại (bấm là nhảy tới), và chủ đề chiến thuật nên luyện.
+
+Điều hướng bằng phím `←`/`→`, nút "Nước sai kế tiếp" nhảy tới chỗ cần học.
 
 Trang web tự chứa (không cần internet), chỉ chạy trên máy bạn (`127.0.0.1`).
 Tuỳ chọn: `--port`, `--engine-depth`, `--no-stockfish`.

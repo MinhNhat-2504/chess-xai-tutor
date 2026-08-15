@@ -4,7 +4,7 @@ Bạn thua một ván cờ và muốn biết **mình sai ở đâu, vì sao sai,
 
 Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt nhất", nhưng chỉ đưa ra con số (-1.7, +0.4...) mà người mới nhìn vào không hiểu gì. Dự án này lấp khoảng trống đó: **phân tích ván cờ với độ chính xác của Stockfish, rồi giải thích bằng tiếng Việt tự nhiên** — nước này là đòn đôi, nước kia để hở ghim, blunder này sẽ bị trừng phạt bằng biến nào.
 
-> *"h3 là blunder, kém nước Kf2 khoảng 436 điểm. Nước này mở đường cho đối thủ tạo đòn đôi (fork). Đối thủ có thể trừng phạt bằng: 1...Nc2+ 2. Ke2 Nxa1."*
+> *"h3 là sai lầm nghiêm trọng (blunder); nước tốt hơn là Kf2. Cơ hội thắng giảm từ 84% xuống 51%. Nước này mở đường cho đối thủ tạo đòn đôi (fork). Đối thủ có thể trừng phạt bằng: 1...Nc2+ 2. Kd2 Nxa1."*
 > — một câu giải thích thật do phần mềm sinh ra
 
 Điểm khác biệt: **không dùng mô hình ngôn ngữ để "bịa" lý do**. Mọi câu giải thích đều sinh từ bằng chứng kiểm chứng được — điểm số engine, luật cờ, và phân rã hàm đánh giá.
@@ -33,6 +33,7 @@ Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt
 
 **Xem lại ván đấu từ Chess.com / Lichess**
 - **Giao diện web**: dán PGN hoặc chọn file là có ngay bảng phân tích trên trình duyệt — bàn cờ, danh sách nước tô màu theo chất lượng, giải thích từng nước và tổng kết ván.
+- **Học từ nước sai, không chỉ biết mình sai**: với mỗi sai lầm, bấm "Xem đối thủ trừng phạt thế nào" để phát lại đòn từng bước ngay trên bàn cờ, có mũi tên và chú thích ("đòn đôi: mã c2 tấn công cùng lúc xe a1 và vua e1", "ăn xe (5 điểm)"). Tập tự đoán nước kế tiếp trước khi bấm — đó là cách luyện mắt nhìn chiến thuật.
 - Hoặc viewer Pygame: kéo-thả file PGN, bấm "Lỗi kế" để nhảy thẳng tới các nước sai.
 
 ## Cài đặt
@@ -115,7 +116,7 @@ scripts/
   train.py, evaluate.py, benchmark_difficulty.py   # Phục vụ nghiên cứu
 ```
 
-Kiểm thử (99 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
+Kiểm thử (106 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
 
 ```bash
 python -m pytest -q
@@ -136,7 +137,7 @@ Phần nghiên cứu gốc xây dựng và so sánh ba engine: Minimax, Alpha-Be
 
 ## Hướng phát triển
 
-- Bấm vào một phương án để xem biến thể diễn ra ngay trên bàn cờ.
+- Bấm vào một phương án bất kỳ (không chỉ nước sai) để xem biến thể diễn ra trên bàn cờ.
 - Lưu lịch sử nhiều ván để theo dõi tiến bộ (accuracy tăng, motif để hở giảm).
 - Thêm motif nâng cao: quá tải (overloading), đánh lạc hướng (deflection), chiếu đôi.
 - Deploy web UI lên hosting công khai để dùng không cần cài Python.

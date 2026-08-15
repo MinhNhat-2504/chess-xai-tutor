@@ -53,7 +53,7 @@ def test_motifs_flow_into_report_and_facts():
 
     assert any(m["kind"] == "fork" for m in report["motifs"])
     assert any("đòn đôi" in fact for fact in report["tactical_facts"])
-    assert "đòn đôi" in report["explanation_vi"]
+    assert "đòn đôi" in report["explanation_vi"].lower()
 
 
 def test_illegal_move_raises():

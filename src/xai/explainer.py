@@ -65,7 +65,7 @@ def _quality(loss: float) -> MoveQuality:
         return MoveQuality("inaccuracy", "thiếu chính xác")
     if loss <= 250:
         return MoveQuality("mistake", "sai lầm")
-    return MoveQuality("blunder", "blunder")
+    return MoveQuality("blunder", "sai lầm nghiêm trọng (blunder)")
 
 
 class MoveExplainer:
@@ -149,10 +149,13 @@ class MoveExplainer:
         tactical_facts = [m.description_vi for m in motifs]
         tactical_facts += self._tactical_facts(board_before, candidate, board_after, captured, facts_before)
         reasons = self._component_reasons(deltas)
-        refutation = scored["extras"].get("refutation_san", "")
-        opponent_motifs = scored["extras"].get("opponent_motifs", [])
+        extras = scored["extras"]
         text = self._narrative(
-            san, quality, loss, best_san, reasons, tactical_facts, refutation, opponent_motifs
+            san, quality, best_san, reasons, tactical_facts,
+            refutation=extras.get("refutation_san", ""),
+            opponent_motifs=extras.get("opponent_motifs", []),
+            win_before=extras.get("win_chance_best"),
+            win_after=extras.get("win_chance"),
         )
 
         report = {
@@ -238,6 +241,7 @@ class MoveExplainer:
                 "move_uci": item["move"],
                 "move_san": self._san_for_uci(board, item["move"]),
                 "score": round(item["score"], 2),
+                "win_chance": _win_chance(item["score"]),
                 "line_san": self._line_san(board, item["pv"][:6]),
             }
             for item in candidates[:3]
@@ -252,7 +256,11 @@ class MoveExplainer:
             opponent_motifs = detect_motifs(board_after, played["pv"][1])
         extras: dict[str, Any] = {
             "best_line_san": self._line_san(board, best["pv"][:8]),
+            "best_line": self._annotated_line(board, best["pv"][:8]),
             "refutation_san": refutation_san,
+            # Từng bước của đòn trừng phạt kèm chú thích (đòn đôi, ăn quân, chiếu...)
+            # để UI phát lại trên bàn cờ cho người học xem đòn diễn ra thế nào.
+            "refutation_line": self._annotated_line(board_after, played["pv"][1:9]),
             "opponent_motifs": [m.to_dict() for m in opponent_motifs],
             "win_chance": _win_chance(played["score"]),
             "win_chance_best": _win_chance(best["score"]),
@@ -336,7 +344,7 @@ class MoveExplainer:
         facts = []
         mover = before.piece_at(move.from_square)
         if captured is not None:
-            facts.append(f"bắt {self._piece_name(captured)} (+{PIECE_VALUES[captured.piece_type]} điểm vật chất danh nghĩa)")
+            facts.append(f"bắt {self._piece_name(captured)} ({self._pawn_units(captured.piece_type)})")
         if before.is_castling(move):
             facts.append("nhập thành, đưa vua về vị trí an toàn hơn và kích hoạt xe")
         if move.promotion:
@@ -376,24 +384,76 @@ class MoveExplainer:
         ]
 
     @staticmethod
-    def _narrative(san, quality, loss, best_san, reasons, facts, refutation="", opponent_motifs=()) -> str:
-        fact_text = "; ".join(facts[:2]) if facts else "không tạo thay đổi chiến thuật tức thời nổi bật"
-        reason_text = "; ".join(
-            f"{item['label_vi']} {'tăng' if item['delta'] > 0 else 'giảm'} {abs(item['delta']):.0f}"
-            for item in reasons[:2]
-        ) or "tác động chủ yếu nằm trong biến thể đối thủ đáp trả"
+    def _narrative(
+        san, quality, best_san, reasons, facts,
+        refutation="", opponent_motifs=(), win_before=None, win_after=None,
+    ) -> str:
+        """Câu giải thích cho người học: nói bằng cơ hội thắng, đòn chiến thuật và
+        thế trận — không dùng centipawn hay thuật ngữ evaluator."""
+        fact_text = "; ".join(facts[:2])
+        improved = [r["label_vi"] for r in reasons if r["delta"] > 0]
+        worsened = [r["label_vi"] for r in reasons if r["delta"] < 0]
         if quality.label in {"best", "good"}:
-            return f"{san} là {quality.vietnamese}. {fact_text}. Theo evaluator: {reason_text}."
-        text = (
-            f"{san} là {quality.vietnamese}, kém nước {best_san} khoảng {loss:.0f} điểm. "
-            f"{fact_text}. Dấu hiệu chính: {reason_text}."
-        )
+            text = f"{san} là {quality.vietnamese}."
+            if fact_text:
+                text += f" {fact_text[0].upper()}{fact_text[1:]}."
+            if improved:
+                text += f" Nước này cải thiện {', '.join(improved[:2])}."
+            return text
+
+        text = f"{san} là {quality.vietnamese}; nước tốt hơn là {best_san}."
+        if win_before is not None and win_after is not None and win_before - win_after >= 1:
+            text += f" Cơ hội thắng giảm từ {win_before:.0f}% xuống {win_after:.0f}%."
+        if fact_text:
+            text += f" {fact_text[0].upper()}{fact_text[1:]}."
         if opponent_motifs:
             labels = ", ".join(dict.fromkeys(m["label_vi"] for m in opponent_motifs))
             text += f" Nước này mở đường cho đối thủ tạo {labels}."
+        elif worsened:
+            text += f" Thế trận yếu đi ở {', '.join(worsened[:2])}."
         if refutation:
             text += f" Đối thủ có thể trừng phạt bằng: {refutation}."
         return text
+
+    @staticmethod
+    def _pawn_units(piece_type: int) -> str:
+        units = round(PIECE_VALUES[piece_type] / 100)
+        return f"{units} điểm"
+
+    def _annotated_line(self, board: chess.Board, moves: list[chess.Move]) -> list[dict[str, Any]]:
+        """Diễn một biến thành từng bước có chú thích để UI phát lại.
+
+        Mỗi bước: nước đi (SAN + UCI), FEN sau nước, và ``note`` mô tả điều
+        đáng chú ý — motif có tên (đòn đôi, ghim...), ăn quân, chiếu, chiếu hết.
+        """
+        steps = []
+        cursor = board.copy(stack=False)
+        for move in moves:
+            if move not in cursor.legal_moves:
+                break
+            number = cursor.fullmove_number
+            label = f"{number}.{cursor.san(move)}" if cursor.turn == chess.WHITE else f"{number}...{cursor.san(move)}"
+            notes = [m.description_vi for m in detect_motifs(cursor, move)]
+            captured = self._captured_piece(cursor, move)
+            after = cursor.copy(stack=False)
+            after.push(move)
+            if after.is_checkmate():
+                notes.append("chiếu hết")
+            elif captured is not None:
+                notes.append(f"ăn {self._piece_name(captured)} ({self._pawn_units(captured.piece_type)})")
+                if after.is_check():
+                    notes.append("kèm chiếu")
+            elif after.is_check():
+                notes.append("chiếu vua")
+            steps.append({
+                "label": label,
+                "move_uci": move.uci(),
+                "move_san": cursor.san(move),
+                "fen_after": after.fen(),
+                "note": "; ".join(notes),
+            })
+            cursor = after
+        return steps
 
     @staticmethod
     def _san_for_uci(board: chess.Board, move_uci: str) -> str:

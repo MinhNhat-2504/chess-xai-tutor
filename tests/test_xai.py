@@ -19,7 +19,7 @@ def test_explainer_marks_queen_sacrifice_as_costly_at_shallow_depth():
     assert report["centipawn_loss"] > 500
     assert report["quality"] == "blunder"
     assert report["best_move_uci"] != "e1e7"
-    assert "bắt tốt" in report["explanation_vi"]
+    assert "bắt tốt" in report["explanation_vi"].lower()
 
 
 def test_explainer_reports_tactical_facts_and_pgn_style_game_rows():

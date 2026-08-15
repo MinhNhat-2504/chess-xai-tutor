@@ -66,6 +66,7 @@ def _job_snapshot(job_id: str, since: int) -> dict[str, Any]:
             "initial_fen": job["initial_fen"],
             "engine": job["engine"],
             "summary_lines": job.get("summary_lines"),
+            "summary": job.get("summary"),
             "error_message": job.get("error_message"),
         }
 
@@ -86,7 +87,8 @@ def _run_job(job_id: str, starting_fen: str | None, moves: list[chess.Move], exp
                 _jobs[job_id]["reports"].append(report)
         with _jobs_lock:
             job = _jobs[job_id]
-            job["summary_lines"] = format_summary_vi(summarize_game(job["reports"]))
+            job["summary"] = summarize_game(job["reports"])
+            job["summary_lines"] = format_summary_vi(job["summary"])
             job["status"] = "done"
     except Exception as exc:
         with _jobs_lock:
@@ -174,7 +176,18 @@ def create_app(
                 lastmove = None
         size = min(720, max(240, request.args.get("size", default=480, type=int)))
         check_square = board.king(board.turn) if board.is_check() else None
-        svg = chess.svg.board(board=board, lastmove=lastmove, check=check_square, size=size)
+        arrows = []
+        for spec in request.args.get("arrows", "").split(","):
+            spec = spec.strip()
+            if not spec:
+                continue
+            uci, _, color = spec.partition(":")
+            try:
+                move = chess.Move.from_uci(uci)
+            except ValueError:
+                continue
+            arrows.append(chess.svg.Arrow(move.from_square, move.to_square, color=color or "#5bc0de99"))
+        svg = chess.svg.board(board=board, lastmove=lastmove, check=check_square, arrows=arrows, size=size)
         return Response(svg, mimetype="image/svg+xml")
 
     return app
