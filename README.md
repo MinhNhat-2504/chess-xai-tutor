@@ -14,7 +14,7 @@ Bạn thua một ván cờ và muốn biết **mình sai ở đâu, vì sao sai,
 
 Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt nhất", nhưng chỉ đưa ra con số (-1.7, +0.4...) mà người mới nhìn vào không hiểu gì. Dự án này lấp khoảng trống đó: **phân tích ván cờ với độ chính xác của Stockfish, rồi giải thích bằng tiếng Việt tự nhiên** — nước này là đòn đôi, nước kia để hở ghim, blunder này sẽ bị trừng phạt bằng biến nào.
 
-> *"h3 là sai lầm nghiêm trọng (blunder); nước tốt hơn là Kf2. Cơ hội thắng giảm từ 84% xuống 51%. Nước này mở đường cho đối thủ tạo đòn đôi (fork). Đối thủ có thể trừng phạt bằng: 1...Nc2+ 2. Kd2 Nxa1."*
+> *"h3 là sai lầm nghiêm trọng; nước tốt hơn là Kf2. Cơ hội thắng giảm từ 84% xuống 51%. Nước này mở đường cho đối thủ tạo đòn đôi. Đối thủ có thể trừng phạt bằng: 1...Nc2+ 2. Kd2 Nxa1."*
 > — một câu giải thích thật do phần mềm sinh ra
 
 Điểm khác biệt: **không dùng mô hình ngôn ngữ để "bịa" lý do**. Mọi câu giải thích đều sinh từ bằng chứng kiểm chứng được — điểm số engine, luật cờ, và phân rã hàm đánh giá.

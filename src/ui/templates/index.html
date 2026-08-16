@@ -355,8 +355,7 @@ function renderReplay() {
   const arrowColor = kind === "punish" ? "#ed7e43cc" : "#5abe7acc";
   setBoard(step ? step.fen_after : startFen, step ? step.move_uci : (kind === "punish" ? played.move_uci : ""), nextMove ? `${nextMove.move_uci}:${arrowColor}` : "");
 
-  const title = kind === "punish" ? `Đối thủ trừng phạt ${esc(played.move_san)}` : `Nếu đi ${esc(played.best_move_san)}`;
-  let html = `<div class="replay ${kind === "better" ? "better" : ""}"><h3>${title}</h3><div class="steps">`;
+  let html = `<div class="replay ${kind === "better" ? "better" : ""}"><div class="steps">`;
   for (let i = 0; i < line.length; i++) {
     const cls = i === index - 1 ? "current" : (i < index - 1 ? "done" : "future");
     html += `<span class="step ${cls}" onclick="replay.index=${i + 1};renderReplay()">${esc(line[i].label)}</span>`;

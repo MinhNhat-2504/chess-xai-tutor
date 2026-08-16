@@ -29,12 +29,12 @@ PIECE_NAMES_VI = {
 }
 
 MOTIF_LABELS_VI = {
-    "fork": "đòn đôi (fork)",
-    "pin": "ghim quân (pin)",
-    "skewer": "đòn xiên (skewer)",
-    "discovered_attack": "đòn mở (discovered attack)",
-    "discovered_check": "đòn mở chiếu (discovered check)",
-    "back_rank_mate": "chiếu hết tầng cuối (back-rank mate)",
+    "fork": "đòn đôi",
+    "pin": "ghim quân",
+    "skewer": "đòn xiên",
+    "discovered_attack": "đòn mở",
+    "discovered_check": "đòn mở chiếu",
+    "back_rank_mate": "chiếu hết tầng cuối",
 }
 
 _DIAG_DIRECTIONS = ((1, 1), (1, -1), (-1, 1), (-1, -1))
@@ -142,7 +142,7 @@ def _fork(board_after: chess.Board, color: chess.Color, to_sq: int) -> Motif | N
     return Motif(
         kind="fork",
         label_vi=MOTIF_LABELS_VI["fork"],
-        description_vi=f"đòn đôi (fork): {_piece_label(board_after, to_sq)} tấn công cùng lúc {target_text}",
+        description_vi=f"đòn đôi: {_piece_label(board_after, to_sq)} tấn công cùng lúc {target_text}",
         squares=tuple(chess.square_name(sq) for sq in (to_sq, *targets[:3])),
     )
 
@@ -164,7 +164,7 @@ def _new_pins(board_before: chess.Board, board_after: chess.Board, color: chess.
             kind="pin",
             label_vi=MOTIF_LABELS_VI["pin"],
             description_vi=(
-                f"ghim quân (pin): {_piece_label(board_after, square)} bị ghim vào vua, "
+                f"ghim quân: {_piece_label(board_after, square)} bị ghim vào vua, "
                 "không thể rời vị trí"
             ),
             squares=(chess.square_name(square),),
@@ -211,7 +211,7 @@ def _skewers(board_after: chess.Board, color: chess.Color, to_sq: int) -> list[M
                 kind="skewer",
                 label_vi=MOTIF_LABELS_VI["skewer"],
                 description_vi=(
-                    f"đòn xiên (skewer): {_piece_label(board_after, to_sq)} tấn công "
+                    f"đòn xiên: {_piece_label(board_after, to_sq)} tấn công "
                     f"{_piece_label(board_after, front_sq)}; nếu chạy sẽ mất "
                     f"{_piece_label(board_after, back_sq)} phía sau"
                 ),
@@ -252,7 +252,7 @@ def _discovered_attacks(
                     kind="discovered_check",
                     label_vi=MOTIF_LABELS_VI["discovered_check"],
                     description_vi=(
-                        f"đòn mở chiếu (discovered check): {_piece_label(board_after, slider_sq)} "
+                        f"đòn mở chiếu: {_piece_label(board_after, slider_sq)} "
                         f"chiếu vua khi quân rời {chess.square_name(move.from_square)}"
                     ),
                     squares=(chess.square_name(slider_sq), chess.square_name(target_sq)),
@@ -265,7 +265,7 @@ def _discovered_attacks(
                     kind="discovered_attack",
                     label_vi=MOTIF_LABELS_VI["discovered_attack"],
                     description_vi=(
-                        f"đòn mở (discovered attack): {_piece_label(board_after, slider_sq)} "
+                        f"đòn mở: {_piece_label(board_after, slider_sq)} "
                         f"tấn công {_piece_label(board_after, target_sq)} khi đường được mở"
                     ),
                     squares=(chess.square_name(slider_sq), chess.square_name(target_sq)),
@@ -292,7 +292,7 @@ def _back_rank_mate(board_after: chess.Board, color: chess.Color) -> Motif | Non
         kind="back_rank_mate",
         label_vi=MOTIF_LABELS_VI["back_rank_mate"],
         description_vi=(
-            "chiếu hết tầng cuối (back-rank mate): vua bị khoá ở hàng cuối "
+            "chiếu hết tầng cuối: vua bị khoá ở hàng cuối "
             f"và {_piece_label(board_after, on_rank_heavy[0])} kết thúc ván cờ"
         ),
         squares=(chess.square_name(on_rank_heavy[0]), chess.square_name(king_sq)),

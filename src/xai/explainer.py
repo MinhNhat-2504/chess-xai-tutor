@@ -65,7 +65,7 @@ def _quality(loss: float) -> MoveQuality:
         return MoveQuality("inaccuracy", "thiếu chính xác")
     if loss <= 250:
         return MoveQuality("mistake", "sai lầm")
-    return MoveQuality("blunder", "sai lầm nghiêm trọng (blunder)")
+    return MoveQuality("blunder", "sai lầm nghiêm trọng")
 
 
 class MoveExplainer:
