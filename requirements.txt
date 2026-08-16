@@ -5,4 +5,5 @@ matplotlib>=3.7          # charts for reports
 tqdm>=4.65               # self-play/evaluation progress bars
 pygame>=2.5              # pygame chess UI
 flask>=3.0               # web UI (scripts/web_app.py)
+waitress>=3.0            # WSGI server khi deploy (wsgi.py / Dockerfile)
 pytest>=7.4              # tests

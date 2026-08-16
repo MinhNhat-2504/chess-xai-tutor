@@ -1,3 +1,13 @@
+---
+title: Chess XAI Tutor
+emoji: ♟️
+colorFrom: gray
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Chess XAI Tutor — Phân tích ván cờ và giải thích bằng tiếng Việt
 
 Bạn thua một ván cờ và muốn biết **mình sai ở đâu, vì sao sai, và lần sau nên làm gì**?
@@ -84,6 +94,8 @@ python scripts/analyze_game.py duong-dan/van-co.pgn --output bao_cao.json
 
 Tuỳ chọn hay dùng: `--engine-depth 18` (phân tích kỹ hơn), `--no-stockfish` (chỉ dùng engine nội bộ). Cấu hình mặc định nằm ở mục `xai` trong [config/config.yaml](config/config.yaml). Chi tiết đầy đủ: [docs/XAI.md](docs/XAI.md).
 
+**Đưa lên web công khai (miễn phí):** repo có sẵn `Dockerfile`; xem [docs/DEPLOY.md](docs/DEPLOY.md) để deploy lên Hugging Face Spaces / Render trong vài phút.
+
 ## Phần mềm hoạt động thế nào?
 
 Mỗi báo cáo nước đi ghép từ bốn nguồn bằng chứng độc lập:
@@ -140,4 +152,4 @@ Phần nghiên cứu gốc xây dựng và so sánh ba engine: Minimax, Alpha-Be
 - Bấm vào một phương án bất kỳ (không chỉ nước sai) để xem biến thể diễn ra trên bàn cờ.
 - Lưu lịch sử nhiều ván để theo dõi tiến bộ (accuracy tăng, motif để hở giảm).
 - Thêm motif nâng cao: quá tải (overloading), đánh lạc hướng (deflection), chiếu đôi.
-- Deploy web UI lên hosting công khai để dùng không cần cài Python.
+- Lưu lịch sử người dùng, đăng nhập, gói trả phí — nếu phát triển thành dịch vụ.

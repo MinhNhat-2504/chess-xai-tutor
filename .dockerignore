@@ -1,0 +1,17 @@
+.git
+.venv
+venv
+__pycache__
+**/__pycache__
+*.py[cod]
+engines/
+data/
+experiments/
+notebooks/
+docs/
+tests/
+scripts/
+*.docx
+*.ipynb
+*.pkl
+_mnhat_dump.txt

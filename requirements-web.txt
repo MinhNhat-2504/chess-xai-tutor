@@ -1,0 +1,6 @@
+# Bộ thư viện tối thiểu để chạy web app trên server (không có pygame/matplotlib).
+python-chess>=1.999
+numpy>=1.24
+pyyaml>=6.0
+flask>=3.0
+waitress>=3.0
