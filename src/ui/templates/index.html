@@ -141,7 +141,7 @@ const ERRORS = new Set(["inaccuracy", "mistake", "blunder"]);
 const PHASE_VI = { opening: "khai cuộc", middlegame: "trung cuộc", endgame: "tàn cuộc" };
 const MOTIF_VI = { fork: "đòn đôi", pin: "ghim quân", skewer: "đòn xiên", discovered_attack: "đòn mở", discovered_check: "đòn mở chiếu", back_rank_mate: "chiếu hết tầng cuối" };
 let reports = [], total = 0, position = 0, jobId = null, initialFen = "", done = false, flipped = false;
-let replay = null, autoTimer = null;
+let replay = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -162,6 +162,7 @@ document.addEventListener("keydown", ev => {
     if (ev.key === "ArrowRight") replayStep(1);
     else if (ev.key === "ArrowLeft") replayStep(-1);
     else if (ev.key === "Escape") exitReplay();
+    else if (ev.key === "f" || ev.key === "F") flipBoard();
     return;
   }
   if (ev.key === "ArrowLeft") go(position - 1);
@@ -232,7 +233,7 @@ function go(newPosition) {
   render();
 }
 
-function flipBoard() { flipped = !flipped; render(); }
+function flipBoard() { flipped = !flipped; if (replay) { setEvalBar(replay.played); renderReplay(); } else render(); }
 
 function nextError() {
   for (let i = position; i < reports.length; i++) {
@@ -350,16 +351,7 @@ function replayStep(delta) {
   replay.index = Math.max(0, Math.min(replay.index + delta, replay.line.length));
   renderReplay();
 }
-function toggleAuto() {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; renderReplay(); return; }
-  autoTimer = setInterval(() => {
-    if (!replay || replay.index >= replay.line.length) { clearInterval(autoTimer); autoTimer = null; if (replay) renderReplay(); return; }
-    replayStep(1);
-  }, 1400);
-  renderReplay();
-}
 function exitReplay(rerender = true) {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
   replay = null;
   if (rerender) render();
 }
@@ -378,18 +370,17 @@ function renderReplay() {
   }
   html += `</div>`;
   let note;
-  if (!step) note = `Mũi tên = nước sắp đi. Thử đoán trước, rồi bấm <b>▶</b>.`;
+  if (!step) note = `Mũi tên = nước sắp đi. Thử đoán trước, rồi bấm phím <b>→</b> để xem.`;
   else {
     note = `<b>${esc(step.label)}</b>` + (step.note ? ` — ${esc(cap(step.note))}` : "");
     if (index === line.length) note += ` <span class="hint">(hết biến)</span>`;
   }
   html += `<div class="note">${note}</div>`;
   html += `<div class="actions">
-    <button class="ghost small" onclick="replayStep(-1)" ${index === 0 ? "disabled" : ""}>◀</button>
-    <button class="small" onclick="replayStep(1)" ${index >= line.length ? "disabled" : ""}>▶ Nước tiếp</button>
-    <button class="ghost small" onclick="toggleAuto()">${autoTimer ? "⏸ Dừng" : "▶▶ Tự chạy"}</button>
     <button class="ghost small" onclick="exitReplay()">Quay lại</button>
-  </div></div>`;
+    <button class="ghost small" onclick="flipBoard()">Xoay bàn cờ</button>
+  </div>
+  <p class="hint">Phím ← → để lùi/tiến, Esc để quay lại.</p></div>`;
   $("infocol").innerHTML = html;
 }
 
