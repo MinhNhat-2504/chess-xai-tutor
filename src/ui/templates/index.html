@@ -116,10 +116,8 @@
             <img id="board" width="480" height="480" alt="Bàn cờ">
           </div>
           <div class="controls">
-            <button class="ghost small" onclick="go(0)">|◀</button>
             <button class="ghost small" onclick="go(position-1)">◀</button>
             <button class="ghost small" onclick="go(position+1)">▶</button>
-            <button class="ghost small" onclick="nextError()">Nước sai kế tiếp</button>
             <button class="ghost small" onclick="flipBoard()">Xoay bàn cờ</button>
           </div>
           <div class="movelist" id="movelist"></div>
@@ -289,7 +287,7 @@ function render() {
 
   const info = $("infocol");
   if (!current) {
-    info.innerHTML = '<p class="kv">Bấm vào một nước, hoặc dùng phím ← →. F để xoay bàn cờ.</p>';
+    info.innerHTML = '<p class="kv">Bấm vào một nước bên dưới bàn cờ, hoặc dùng phím ← →.</p>';
     return;
   }
   const r = current;
@@ -297,11 +295,6 @@ function render() {
   const color = QUALITY_COLOR[r.quality] || "var(--text)";
   const number = r.side === "white" ? `${r.move_number}.` : `${r.move_number}...`;
   let html = `<p class="qhead" style="color:${color}">${number} ${esc(r.move_san)} — ${QUALITY_TITLE[r.quality] || esc(r.quality_vi)}</p>`;
-  if (isError) {
-    let line = `Nên đi: <b style="color:var(--best)">${esc(r.best_move_san)}</b>`;
-    if (r.win_chance !== undefined) line += ` <span class="kv">· cơ hội thắng ${Math.round(r.win_chance_best)}% → ${Math.round(r.win_chance)}%</span>`;
-    html += `<p class="kv" style="font-size:15px">${line}</p>`;
-  }
   html += `<p class="headline">${esc(r.headline_vi || "")}</p>`;
   const facts = (r.tactical_facts || []).slice(0, 2).map(cap);
   if (facts.length && !(r.headline_vi || "").startsWith(facts[0].slice(0, 12))) {
@@ -370,17 +363,13 @@ function renderReplay() {
   }
   html += `</div>`;
   let note;
-  if (!step) note = `Mũi tên = nước sắp đi. Thử đoán trước, rồi bấm phím <b>→</b> để xem.`;
+  if (!step) note = `Thử đoán nước tiếp theo, rồi bấm phím <b>→</b> để xem.`;
   else {
-    note = `<b>${esc(step.label)}</b>` + (step.note ? ` — ${esc(cap(step.note))}` : "");
+    note = esc(cap(step.note || ""));
     if (index === line.length) note += ` <span class="hint">(hết biến)</span>`;
   }
   html += `<div class="note">${note}</div>`;
-  html += `<div class="actions">
-    <button class="ghost small" onclick="exitReplay()">Quay lại</button>
-    <button class="ghost small" onclick="flipBoard()">Xoay bàn cờ</button>
-  </div>
-  <p class="hint">Phím ← → để lùi/tiến, Esc để quay lại.</p></div>`;
+  html += `<div class="actions"><button class="ghost small" onclick="exitReplay()">Quay lại</button></div></div>`;
   $("infocol").innerHTML = html;
 }
 

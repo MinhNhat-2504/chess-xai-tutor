@@ -440,6 +440,40 @@ class MoveExplainer:
             return f"Thế trận yếu đi ở {', '.join(worsened[:2])}."
         return "Bỏ lỡ nước mạnh hơn nhiều."
 
+    def _plain_move_note(self, before: chess.Board, move: chess.Move, after: chess.Board) -> str:
+        """Giải thích ngắn cho nước không có sự kiện nổi bật, để bước nào của
+        biến cũng có lời — người học không phải nhìn nước đi trơ trọi."""
+        mover = before.piece_at(move.from_square)
+        if mover is None:
+            return ""
+        name = _PIECE_NAMES[mover.piece_type]
+        to_sq = chess.square_name(move.to_square)
+        if before.is_check():
+            if mover.piece_type == chess.KING:
+                return f"vua phải thoát chiếu, chạy sang {to_sq}"
+            return f"{name} chặn nước chiếu tại {to_sq}"
+        if before.is_castling(move):
+            return "nhập thành, đưa vua vào nơi an toàn"
+        if move.promotion:
+            return f"phong cấp thành {_PIECE_NAMES[move.promotion]}"
+        # Nước đe doạ: quân vừa đi nhắm vào quân đối phương to hơn hoặc không được bảo vệ.
+        threatened = []
+        for square in after.attacks(move.to_square):
+            target = after.piece_at(square)
+            if target is None or target.color == mover.color or target.piece_type == chess.KING:
+                continue
+            bigger = PIECE_VALUES[target.piece_type] > PIECE_VALUES[mover.piece_type]
+            undefended = not after.attackers(target.color, square)
+            if bigger or undefended:
+                threatened.append((PIECE_VALUES[target.piece_type], target, square))
+        if threatened:
+            _, target, square = max(threatened, key=lambda item: item[0])
+            return f"{name} sang {to_sq}, đe doạ {_PIECE_NAMES[target.piece_type]} {chess.square_name(square)}"
+        # Quân vừa đi có đang thoát khỏi chỗ bị tấn công không?
+        if before.attackers(not mover.color, move.from_square) and not after.attackers(not mover.color, move.to_square):
+            return f"{name} rút khỏi ô đang bị tấn công, sang {to_sq}"
+        return f"{name} sang {to_sq}"
+
     @staticmethod
     def _pawn_units(piece_type: int) -> str:
         units = round(PIECE_VALUES[piece_type] / 100)
@@ -470,6 +504,8 @@ class MoveExplainer:
                     notes.append("kèm chiếu")
             elif after.is_check():
                 notes.append("chiếu vua")
+            if not notes:
+                notes.append(self._plain_move_note(cursor, move, after))
             steps.append({
                 "label": label,
                 "move_uci": move.uci(),
