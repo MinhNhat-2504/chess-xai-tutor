@@ -92,7 +92,7 @@ python scripts/xai_viewer.py
 python scripts/analyze_game.py duong-dan/van-co.pgn --output bao_cao.json
 ```
 
-Tuỳ chọn hay dùng: `--engine-depth 18` (phân tích kỹ hơn), `--no-stockfish` (chỉ dùng engine nội bộ). Cấu hình mặc định nằm ở mục `xai` trong [config/config.yaml](config/config.yaml). Chi tiết đầy đủ: [docs/XAI.md](docs/XAI.md).
+Một ván 140 nửa nước phân tích hết ~50 giây ở chế độ mặc định (kết quả hiện dần từng nước); trên web có thể chọn "Kỹ" (depth 16) cho ván quan trọng. Tuỳ chọn CLI: `--engine-depth 16` (phân tích kỹ hơn), `--no-stockfish` (chỉ dùng engine nội bộ). Cấu hình mặc định nằm ở mục `xai` trong [config/config.yaml](config/config.yaml). Chi tiết đầy đủ: [docs/XAI.md](docs/XAI.md).
 
 **Đưa lên web công khai (miễn phí):** repo có sẵn `Dockerfile`; xem [docs/DEPLOY.md](docs/DEPLOY.md) để deploy lên Hugging Face Spaces / Render trong vài phút.
 
@@ -128,7 +128,7 @@ scripts/
   train.py, evaluate.py, benchmark_difficulty.py   # Phục vụ nghiên cứu
 ```
 
-Kiểm thử (106 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
+Kiểm thử (108 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
 
 ```bash
 python -m pytest -q

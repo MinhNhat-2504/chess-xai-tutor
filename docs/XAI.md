@@ -22,14 +22,21 @@ thứ tự này:
    `engines/` đã nằm trong `.gitignore`, không bị commit).
 
 Cấu hình mặc định nằm ở mục `xai` trong `config/config.yaml` (`engine_depth`,
-`multipv`, `use_stockfish`).
+`engine_time_s`, `multipv`, `use_stockfish`).
+
+**Tốc độ:** mặc định depth 12 với nắp 1 giây mỗi lần tìm kiếm — đo thực tế trên
+ván 140 nửa nước: ~50 giây (0,36 s/nước), và kết luận sai/không-sai trùng với
+depth 16 ở mức 94%, ngang depth 14 nhưng nhanh gấp 3. Oracle cache theo FEN nên
+khi phân tích cả ván, điểm của nước đã đi lấy từ phân tích thế kế tiếp (cách
+Lichess làm) — mỗi vị trí chỉ chạy engine đúng một lần. Web có lựa chọn
+**Nhanh (depth 12) / Kỹ (depth 16, chậm ~3 lần)** cho ván quan trọng.
 
 ## Ứng dụng đồ hoạ cho người học
 
 Mở ứng dụng bằng lệnh sau:
 
 ```bash
-python scripts/xai_viewer.py                 # tự dò Stockfish, depth 14
+python scripts/xai_viewer.py                 # tự dò Stockfish, depth 12
 python scripts/xai_viewer.py --no-stockfish --depth 2   # chỉ dùng engine nội bộ
 ```
 
@@ -122,7 +129,7 @@ Trang tổng kết có ở cả hai nơi: màn chơi trực tiếp (phím **T**)
 
 ```bash
 python scripts/analyze_game.py path/to/game.pgn --output experiments/results/xai_report.json
-python scripts/analyze_game.py path/to/game.pgn --engine-depth 18   # phân tích kỹ hơn
+python scripts/analyze_game.py path/to/game.pgn --engine-depth 16   # phân tích kỹ hơn (chậm ~3 lần)
 python scripts/analyze_game.py path/to/game.pgn --no-stockfish --depth 2
 ```
 

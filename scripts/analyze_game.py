@@ -41,7 +41,7 @@ def main() -> None:
     parser.add_argument("pgn", type=Path, help="File PGN đầu vào")
     parser.add_argument("--depth", type=int, default=2, help="Độ sâu Alpha-Beta khi fallback (mặc định: 2)")
     parser.add_argument("--engine-path", type=Path, default=None, help="Đường dẫn Stockfish (mặc định: tự dò)")
-    parser.add_argument("--engine-depth", type=int, default=None, help="Độ sâu Stockfish (mặc định: 14)")
+    parser.add_argument("--engine-depth", type=int, default=None, help="Độ sâu Stockfish (mặc định: 12; 16 = phân tích kỹ)")
     parser.add_argument("--no-stockfish", action="store_true", help="Chỉ dùng engine nội bộ")
     parser.add_argument("--max-plies", type=int, default=None, help="Chỉ phân tích N nửa-nước đầu")
     parser.add_argument("--output", type=Path, help="File JSON; mặc định in ra stdout")
@@ -61,14 +61,15 @@ def main() -> None:
     xai_cfg = load_xai_config(args.config)
     use_stockfish = (not args.no_stockfish) and xai_cfg.get("use_stockfish", True)
     engine_path = args.engine_path or xai_cfg.get("engine_path")
-    engine_depth = args.engine_depth or int(xai_cfg.get("engine_depth", 14))
+    engine_depth = args.engine_depth or int(xai_cfg.get("engine_depth", 12))
 
     explainer = MoveExplainer(
         depth=args.depth,
         use_stockfish=use_stockfish,
         engine_path=engine_path,
         engine_depth=engine_depth,
-        multipv=int(xai_cfg.get("multipv", 5)),
+        multipv=int(xai_cfg.get("multipv", 3)),
+        engine_time_s=xai_cfg.get("engine_time_s", 1.0),
     )
     print(f"Engine phân tích: {explainer.engine_label}", file=sys.stderr)
     try:

@@ -125,8 +125,9 @@ def main():
                 depth=2,
                 use_stockfish=xai_cfg.get("use_stockfish", True),
                 engine_path=xai_cfg.get("engine_path"),
-                engine_depth=int(xai_cfg.get("engine_depth", 14)),
-                multipv=int(xai_cfg.get("multipv", 5)),
+                engine_depth=int(xai_cfg.get("engine_depth", 12)),
+                multipv=int(xai_cfg.get("multipv", 3)),
+                engine_time_s=xai_cfg.get("engine_time_s", 1.0),
             )
             print(f"[play] Giải thích nước đi: {explainer.engine_label}")
         try:

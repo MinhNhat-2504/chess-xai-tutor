@@ -56,7 +56,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--depth", type=int, default=2, help="Độ sâu Alpha-Beta khi fallback")
     parser.add_argument("--engine-path", type=Path, default=None, help="Đường dẫn Stockfish (mặc định: tự dò)")
-    parser.add_argument("--engine-depth", type=int, default=None, help="Độ sâu Stockfish (mặc định: 14)")
+    parser.add_argument("--engine-depth", type=int, default=None, help="Độ sâu Stockfish (mặc định: 12; 16 = phân tích kỹ)")
     parser.add_argument("--no-stockfish", action="store_true", help="Chỉ dùng engine nội bộ")
     parser.add_argument("--config", type=Path, default=Path(__file__).resolve().parents[1] / "config" / "config.yaml")
     args = parser.parse_args()
@@ -65,9 +65,10 @@ def main() -> None:
     app = create_app(
         use_stockfish=(not args.no_stockfish) and xai_cfg.get("use_stockfish", True),
         engine_path=args.engine_path or xai_cfg.get("engine_path"),
-        engine_depth=args.engine_depth or int(xai_cfg.get("engine_depth", 14)),
-        multipv=int(xai_cfg.get("multipv", 5)),
+        engine_depth=args.engine_depth or int(xai_cfg.get("engine_depth", 12)),
+        multipv=int(xai_cfg.get("multipv", 3)),
         fallback_depth=args.depth,
+        engine_time_s=xai_cfg.get("engine_time_s", 1.0),
     )
     port = ensure_port(args.host, args.port)
     print(f"Chess XAI Tutor đang chạy tại: http://{args.host}:{port}  (Ctrl+C để dừng)")

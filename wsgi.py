@@ -6,6 +6,7 @@ thể ghi đè bằng biến môi trường để chỉnh theo sức máy chủ:
 
     XAI_ENGINE_DEPTH=12   # giảm độ sâu nếu CPU yếu
     XAI_MULTIPV=3
+    XAI_ENGINE_TIME=1.0   # nắp thời gian mỗi lần tìm kiếm (giây)
     XAI_USE_STOCKFISH=0   # tắt Stockfish (chỉ engine nội bộ)
 """
 from __future__ import annotations
@@ -36,6 +37,7 @@ _use_stockfish = os.environ.get("XAI_USE_STOCKFISH", "1") not in ("0", "false", 
 app = create_app(
     use_stockfish=_use_stockfish and _cfg.get("use_stockfish", True),
     engine_path=os.environ.get("STOCKFISH_PATH") or _cfg.get("engine_path"),
-    engine_depth=int(os.environ.get("XAI_ENGINE_DEPTH", _cfg.get("engine_depth", 14))),
-    multipv=int(os.environ.get("XAI_MULTIPV", _cfg.get("multipv", 5))),
+    engine_depth=int(os.environ.get("XAI_ENGINE_DEPTH", _cfg.get("engine_depth", 12))),
+    multipv=int(os.environ.get("XAI_MULTIPV", _cfg.get("multipv", 3))),
+    engine_time_s=float(os.environ.get("XAI_ENGINE_TIME", _cfg.get("engine_time_s", 1.0) or 0)) or None,
 )

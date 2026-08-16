@@ -101,7 +101,7 @@ def run_xai_viewer(
     square_size: int = 64,
     use_stockfish: bool = True,
     engine_path=None,
-    engine_depth: int = 14,
+    engine_depth: int = 12,
 ) -> None:
     """Mở ứng dụng: chọn/thả PGN, sau đó duyệt và học từ các lỗi."""
     import pygame

@@ -86,3 +86,37 @@ def test_explainer_fallback_without_stockfish_keeps_legacy_shape():
     assert report["method"]["depth"] == 1
     assert "win_chance" not in report
     explainer.close()  # không có oracle vẫn gọi được
+
+
+@requires_stockfish
+def test_oracle_reuses_next_position_analysis_for_played_move():
+    # Nước sai (không nằm trong top MultiPV) lấy điểm từ thế cờ kế tiếp; thế đó
+    # được cache nên phân tích nước tiếp theo không tốn thêm lần chạy engine.
+    board = chess.Board()
+    calls = []
+    with StockfishOracle(depth=8, multipv=1) as oracle:
+        original = oracle.engine.analyse
+
+        def counting(*args, **kwargs):
+            calls.append(1)
+            return original(*args, **kwargs)
+
+        oracle.engine.analyse = counting
+        first = oracle.analyze(board, chess.Move.from_uci("a2a3"))  # gần chắc không phải top-1
+        assert first["played"]["move"] == "a2a3"
+        assert first["played"]["pv"][0] == chess.Move.from_uci("a2a3")
+        after = board.copy()
+        after.push_uci("a2a3")
+        n_before = len(calls)
+        oracle.analyze(after)  # cache hit: không gọi engine
+        assert len(calls) == n_before
+
+
+@requires_stockfish
+def test_oracle_time_cap_bounds_search():
+    import time
+    board = chess.Board("8/8/8/8/8/2k5/1p6/1K6 w - - 0 1")  # tàn cuộc dễ nổ độ sâu
+    with StockfishOracle(depth=40, multipv=3, time_limit_s=0.3) as oracle:
+        t = time.time()
+        oracle.analyze(board)
+        assert time.time() - t < 3.0

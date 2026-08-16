@@ -34,7 +34,7 @@ ai truy cập và tự dậy khi có người vào (mất ~30 giây lần đầu
 
 Cấu hình Space nằm ở khối YAML đầu `README.md` (`sdk: docker`, `app_port: 7860`)
 — đừng xoá khối đó. Nếu CPU chậm, vào **Settings → Variables** thêm
-`XAI_ENGINE_DEPTH=12` để phân tích nhanh hơn.
+`XAI_ENGINE_DEPTH=10` để phân tích nhanh hơn (mặc định 12).
 
 Cập nhật web sau này: commit rồi `git push hf main`.
 
@@ -47,7 +47,7 @@ miền riêng miễn phí.
 2. **New → Web Service** → chọn repo `chess-xai-tutor` → Runtime **Docker**
    → Instance type **Free** → **Create**.
 3. Render tự đọc `Dockerfile` và biến `PORT`. Nên thêm biến môi trường
-   `XAI_ENGINE_DEPTH=10` và `XAI_MULTIPV=3` vì CPU gói free yếu.
+   `XAI_ENGINE_DEPTH=10` và `XAI_ENGINE_TIME=0.6` vì CPU gói free yếu.
 
 ## Cách 3 — Chạy trên máy bạn, chia sẻ link tạm (demo cho bạn bè/thầy cô)
 

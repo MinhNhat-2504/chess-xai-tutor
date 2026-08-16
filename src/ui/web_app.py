@@ -102,8 +102,9 @@ def create_app(
     use_stockfish: bool = True,
     engine_path: str | None = None,
     engine_depth: int = 14,
-    multipv: int = 5,
+    multipv: int = 3,
     fallback_depth: int = 2,
+    engine_time_s: float | None = 1.5,
 ) -> Flask:
     app = Flask(__name__, template_folder=str(Path(__file__).parent / "templates"))
     explainer_kwargs = dict(
@@ -112,6 +113,7 @@ def create_app(
         engine_path=engine_path,
         engine_depth=engine_depth,
         multipv=multipv,
+        engine_time_s=engine_time_s,
     )
 
     @app.get("/")
@@ -122,6 +124,7 @@ def create_app(
     def analyze():
         text = request.form.get("pgn", "")
         upload = request.files.get("file")
+        depth_override = request.form.get("depth", type=int)
         if upload is not None and not text.strip():
             text = upload.read(_MAX_PGN_BYTES + 1).decode("utf-8-sig", errors="replace")
         try:
@@ -146,9 +149,14 @@ def create_app(
             }
             while len(_jobs) > _MAX_JOBS:
                 _jobs.popitem(last=False)
+        job_kwargs = dict(explainer_kwargs)
+        if depth_override:
+            job_kwargs["engine_depth"] = max(8, min(20, depth_override))
+            if job_kwargs["engine_depth"] >= 16:
+                job_kwargs["engine_time_s"] = 3.0  # phân tích kỹ: nới nắp thời gian
         threading.Thread(
             target=_run_job,
-            args=(job_id, game.headers.get("FEN"), moves, explainer_kwargs),
+            args=(job_id, game.headers.get("FEN"), moves, job_kwargs),
             daemon=True,
         ).start()
         return jsonify({"job_id": job_id, "total": len(moves)})

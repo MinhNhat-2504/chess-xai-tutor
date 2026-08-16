@@ -23,7 +23,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Chess XAI PGN viewer")
     parser.add_argument("--depth", type=int, default=2, help="Độ sâu Alpha-Beta khi fallback")
     parser.add_argument("--engine-path", type=Path, default=None, help="Đường dẫn Stockfish (mặc định: tự dò)")
-    parser.add_argument("--engine-depth", type=int, default=14, help="Độ sâu Stockfish")
+    parser.add_argument("--engine-depth", type=int, default=12, help="Độ sâu Stockfish (12 nhanh, 16 kỹ)")
     parser.add_argument("--no-stockfish", action="store_true", help="Chỉ dùng engine nội bộ")
     parser.add_argument("--square-size", type=int, default=64, help="Kích thước một ô bàn cờ")
     args = parser.parse_args()

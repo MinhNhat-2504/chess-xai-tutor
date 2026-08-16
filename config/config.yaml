@@ -111,8 +111,9 @@ ui:
 xai:
   use_stockfish: true       # dùng Stockfish làm nguồn điểm số khi tìm thấy
   engine_path: null         # null = tự dò: STOCKFISH_PATH -> PATH -> engines/stockfish/
-  engine_depth: 14          # độ sâu Stockfish; 12-16 cân bằng tốc độ/độ tin cậy
-  multipv: 5                # số phương án hàng đầu Stockfish chấm mỗi vị trí
+  engine_depth: 12          # độ sâu Stockfish; 12 = nhanh (~0.2s/nước), 16 = kỹ (~3x chậm hơn); đo thực tế: 12 và 14 cho kết luận ngang nhau
+  engine_time_s: 1.0        # nắp thời gian mỗi lần tìm kiếm (giây); null = chỉ theo depth
+  multipv: 3                # số phương án hàng đầu Stockfish chấm mỗi vị trí
   live_explanations: true   # giải thích trực tiếp trong màn chơi pygame (H = gợi ý, T = tổng kết)
 
 

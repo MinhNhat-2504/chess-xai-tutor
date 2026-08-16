@@ -97,6 +97,10 @@
     <div class="row">
       <button id="analyze-btn" onclick="startAnalyze()">Phân tích ván cờ</button>
       <label class="filelabel">Chọn file .pgn<input type="file" id="file-input" accept=".pgn,.txt"></label>
+      <select id="depth-select" class="filelabel" title="Nhanh: đủ cho học cờ hằng ngày. Kỹ: chậm gấp ~3 lần, dùng cho ván quan trọng.">
+        <option value="12" selected>Nhanh</option>
+        <option value="16">Kỹ (chậm hơn)</option>
+      </select>
       <span id="status"></span>
     </div>
     <div class="progress" id="progress"><div id="progress-bar"></div></div>
@@ -173,7 +177,7 @@ async function startAnalyze() {
   $("analyze-btn").disabled = true;
   setStatus("Đang gửi ván cờ...");
   try {
-    const resp = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ pgn: text }) });
+    const resp = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ pgn: text, depth: $("depth-select").value }) });
     const data = await resp.json();
     if (!resp.ok) { setStatus(data.error || "Có lỗi khi đọc PGN."); $("analyze-btn").disabled = false; return; }
     jobId = data.job_id; total = data.total;

@@ -73,7 +73,8 @@ class MoveExplainer:
 
     Mặc định thử dùng Stockfish (``use_stockfish=True``, tự dò đường dẫn);
     không có thì rơi về Alpha-Beta nội bộ với ``depth`` đã cho. ``engine_depth``
-    là độ sâu Stockfish — 12–16 đủ tin cậy cho mục đích học cờ mà vẫn nhanh.
+    là độ sâu Stockfish — 12 đủ tin cậy cho mục đích học cờ (đo thực tế: kết luận
+    ngang depth 14 mà nhanh gấp 3); 16 cho phân tích kỹ.
 
     Oracle giữ một tiến trình Stockfish chạy nền: gọi :meth:`close` (hoặc dùng
     ``with``) khi phân tích xong.
@@ -86,8 +87,9 @@ class MoveExplainer:
         q_max_depth: int = 6,
         use_stockfish: bool = True,
         engine_path: str | None = None,
-        engine_depth: int = 14,
-        multipv: int = 5,
+        engine_depth: int = 12,
+        multipv: int = 3,
+        engine_time_s: float | None = 1.0,
     ):
         self.depth = max(1, depth)
         self.use_quiescence = use_quiescence
@@ -96,7 +98,8 @@ class MoveExplainer:
         if use_stockfish:
             try:
                 self.oracle = StockfishOracle(
-                    engine_path=engine_path, depth=engine_depth, multipv=multipv
+                    engine_path=engine_path, depth=engine_depth, multipv=multipv,
+                    time_limit_s=engine_time_s,
                 )
             except (FileNotFoundError, OSError, chess.engine.EngineError):
                 self.oracle = None  # im lặng rơi về engine nội bộ
