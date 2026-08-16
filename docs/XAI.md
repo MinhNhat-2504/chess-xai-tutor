@@ -97,6 +97,31 @@ Giao diện được thiết kế cho người học, không dùng thuật ngữ
 Trang web tự chứa (không cần internet), chỉ chạy trên máy bạn (`127.0.0.1`).
 Tuỳ chọn: `--port`, `--engine-depth`, `--no-stockfish`.
 
+## Ván của tôi, hồ sơ điểm yếu và bài tập cá nhân
+
+Ba tab tiếp theo trên web biến "phân tích" thành "học":
+
+- **Ván của tôi** — nhập tên Chess.com hoặc Lichess (API công khai, không cần
+  đăng nhập), chọn 10/20/50 ván → hệ thống tự kéo và phân tích các ván bạn
+  chơi, lưu vào `data/tutor.db` (SQLite; đổi bằng biến `XAI_DB_PATH`). Nhập lại
+  không phân tích trùng. Bấm vào ván để mở lại trong viewer (bàn cờ tự xoay
+  theo màu bạn cầm).
+- **Hồ sơ điểm yếu** (`src/xai/profile.py`) — chỉ tính **nước của chính bạn**:
+  độ chính xác trung bình và xu hướng, thắng/hoà/thua, tỉ lệ lỗi theo khai/
+  trung/tàn cuộc, đòn hay để hở (đòn đôi, ghim...), khai cuộc chơi tệ nhất và
+  thường sai từ nước mấy, các nước tệ nhất (bấm để mở lại). Kèm 3–5 câu nhận
+  xét tiếng Việt.
+- **Luyện tập** (`src/xai/store.py`) — mỗi sai lầm/blunder có đòn trừng phạt
+  mang yếu tố chiến thuật (ăn quân, chiếu, đòn đôi/ghim/xiên/mở, đe doạ) sinh
+  một bài "tìm đòn trừng phạt": bấm quân rồi bấm ô đích; đáp án khác nhưng
+  ngang sức (Stockfish chấm chênh ≤ 30cp) vẫn được tính đúng. Lịch **ôn ngắt
+  quãng** kiểu Leitner: đúng thì giãn 1 → 3 → 7 → 14 → 30 → 60 ngày, sai thì
+  về 1 ngày. Bài từ lỗi của bạn dạy bạn thấy đòn mình để hở; bài từ lỗi của
+  đối thủ dạy bạn không bỏ lỡ cơ hội.
+
+Trên Hugging Face Spaces gói free, ổ đĩa không bền — dữ liệu mất khi Space
+khởi động lại; chạy local hoặc VPS thì giữ được.
+
 ## Giải thích trực tiếp khi chơi với AI
 
 ```bash

@@ -82,6 +82,13 @@ docker run -p 7860:7860 chess-xai-tutor
 Biến môi trường hỗ trợ: `PORT`, `XAI_ENGINE_DEPTH`, `XAI_MULTIPV`,
 `XAI_USE_STOCKFISH=0` (tắt Stockfish), `STOCKFISH_PATH`.
 
+## Dữ liệu người dùng (ván đã phân tích, bài tập)
+
+Lưu trong SQLite `data/tutor.db` (đổi bằng biến `XAI_DB_PATH`). Hugging Face
+Spaces và Render gói free **không giữ ổ đĩa** khi khởi động lại — dữ liệu sẽ
+mất; đủ cho demo, còn muốn giữ hồ sơ người dùng lâu dài thì cần VPS hoặc gói có
+persistent storage.
+
 ## Lưu ý nếu định thương mại hoá
 
 - Các gói miễn phí ở trên dành cho demo/dự án cá nhân; khi có người dùng trả

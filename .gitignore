@@ -20,3 +20,4 @@ experiments/figures/**/*.png
 data/move_cache/*.json
 engines/
 
+data/tutor.db

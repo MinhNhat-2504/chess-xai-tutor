@@ -40,4 +40,5 @@ app = create_app(
     engine_depth=int(os.environ.get("XAI_ENGINE_DEPTH", _cfg.get("engine_depth", 12))),
     multipv=int(os.environ.get("XAI_MULTIPV", _cfg.get("multipv", 3))),
     engine_time_s=float(os.environ.get("XAI_ENGINE_TIME", _cfg.get("engine_time_s", 1.0) or 0)) or None,
+    db_path=os.environ.get("XAI_DB_PATH", str(ROOT / "data" / "tutor.db")),
 )

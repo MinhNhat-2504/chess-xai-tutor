@@ -41,6 +41,15 @@ Các công cụ như Stockfish trả lời rất giỏi câu "nước nào tốt
 - Lỗi phân theo giai đoạn khai cuộc / trung cuộc / tàn cuộc.
 - Danh sách nước cần xem lại và **chủ đề cần luyện** (bạn hay để hở đòn gì).
 
+**Nhập tên là xong — không cần biết PGN**
+- Gõ tên Chess.com/Lichess, chọn số ván → phần mềm tự kéo ván bạn chơi về và phân tích hết, lưu lại để xem sau.
+
+**Hồ sơ điểm yếu cá nhân**
+- Gộp nhiều ván, chỉ tính nước của bạn: chính xác bao nhiêu và đang lên hay xuống, sai nhiều ở khai/trung/tàn cuộc, hay để hở đòn gì, khai cuộc nào chơi tệ và thường sai từ nước mấy.
+
+**Bài tập sinh từ chính lỗi của bạn**
+- Mỗi sai lầm có đòn trừng phạt trở thành một bài "tìm đòn trừng phạt" trên bàn cờ; đúng thì giãn lịch ôn (1 → 3 → 7 → 14 → 30 ngày), sai thì ôn lại hôm sau. Đây là thứ Lichess/Chess.com không làm cho người Việt.
+
 **Xem lại ván đấu từ Chess.com / Lichess**
 - **Giao diện web**: dán PGN hoặc chọn file là có ngay bảng phân tích trên trình duyệt — bàn cờ, danh sách nước tô màu theo chất lượng, giải thích từng nước và tổng kết ván.
 - **Học từ nước sai, không chỉ biết mình sai**: với mỗi sai lầm, bấm "Xem đối thủ trừng phạt thế nào" để phát lại đòn từng bước ngay trên bàn cờ, có mũi tên và chú thích ("đòn đôi: mã c2 tấn công cùng lúc xe a1 và vua e1", "ăn xe (5 điểm)"). Tập tự đoán nước kế tiếp trước khi bấm — đó là cách luyện mắt nhìn chiến thuật.
@@ -128,7 +137,7 @@ scripts/
   train.py, evaluate.py, benchmark_difficulty.py   # Phục vụ nghiên cứu
 ```
 
-Kiểm thử (108 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
+Kiểm thử (117 test, tự bỏ qua các test cần Stockfish nếu máy chưa cài):
 
 ```bash
 python -m pytest -q
@@ -150,6 +159,6 @@ Phần nghiên cứu gốc xây dựng và so sánh ba engine: Minimax, Alpha-Be
 ## Hướng phát triển
 
 - Bấm vào một phương án bất kỳ (không chỉ nước sai) để xem biến thể diễn ra trên bàn cờ.
-- Lưu lịch sử nhiều ván để theo dõi tiến bộ (accuracy tăng, motif để hở giảm).
+- Bàn cờ kéo-thả và giao diện điện thoại.
 - Thêm motif nâng cao: quá tải (overloading), đánh lạc hướng (deflection), chiếu đôi.
 - Lưu lịch sử người dùng, đăng nhập, gói trả phí — nếu phát triển thành dịch vụ.

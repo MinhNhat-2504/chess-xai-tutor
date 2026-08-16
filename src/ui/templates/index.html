@@ -80,13 +80,73 @@
   .sumbox h4 { margin: 0 0 4px; font-size: 15px; }
   .big { font-size: 30px; font-weight: 700; }
   .worst { cursor: pointer; text-decoration: underline dotted; }
+  /* Tab */
+  .tabs { display: flex; gap: 6px; margin: 0 0 18px; flex-wrap: wrap; }
+  .tab { padding: 9px 16px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border); cursor: pointer; font-size: 15px; color: var(--text); }
+  .tab.active { background: var(--accent); color: #16323c; border-color: var(--accent); font-weight: 600; }
+  .tabpane { display: none; } .tabpane.active { display: block; }
+  input[type=text], select.filelabel { background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 15px; }
+  /* Ván của tôi */
+  table.games { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.games th, table.games td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  table.games tr.row { cursor: pointer; } table.games tr.row:hover { background: var(--panel2); }
+  .res-win { color: var(--best); } .res-loss { color: var(--blunder); } .res-draw { color: var(--muted); }
+  /* Hồ sơ */
+  .insight { font-size: 16px; background: var(--panel2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 6px; margin: 8px 0; }
+  .bars { display: flex; flex-direction: column; gap: 6px; }
+  .bar { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .bar .name { width: 130px; color: var(--muted); }
+  .bar .track { flex: 1; height: 12px; background: #23272e; border-radius: 6px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--mistake); }
+  .bar .val { width: 120px; }
+  .spark { display: flex; align-items: flex-end; gap: 3px; height: 60px; margin: 6px 0; }
+  .spark div { width: 14px; background: var(--accent); border-radius: 2px 2px 0 0; cursor: pointer; }
+  /* Luyện tập */
+  .puzzlebox { font-size: 16px; }
+  .verdict-ok { color: var(--best); font-weight: 700; font-size: 18px; }
+  .verdict-bad { color: var(--blunder); font-weight: 700; font-size: 18px; }
+  .stat { display: inline-block; background: var(--panel2); border-radius: 6px; padding: 4px 10px; margin-right: 6px; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Chess XAI Tutor</h1>
-  <p class="sub">Dán PGN từ Chess.com / Lichess (Share → PGN) hoặc chọn file .pgn.</p>
+  <p class="sub">Nhập tên Chess.com/Lichess để tự kéo ván, xem mình yếu gì và luyện đúng chỗ đó — hoặc dán một PGN bất kỳ.</p>
 
+  <div class="tabs">
+    <span class="tab active" data-tab="analyze" onclick="showTab('analyze')">Phân tích ván</span>
+    <span class="tab" data-tab="games" onclick="showTab('games')">Ván của tôi</span>
+    <span class="tab" data-tab="profile" onclick="showTab('profile')">Hồ sơ điểm yếu</span>
+    <span class="tab" data-tab="puzzles" onclick="showTab('puzzles')">Luyện tập</span>
+  </div>
+
+  <!-- ===== Tab: Ván của tôi (nhập theo tên) ===== -->
+  <div class="tabpane" id="tab-games">
+    <div class="card">
+      <div class="row" style="margin-top:0">
+        <select id="src-select" class="filelabel"><option value="chesscom">Chess.com</option><option value="lichess">Lichess</option></select>
+        <input type="text" id="user-input" placeholder="Tên người chơi (vd: mnhat2504)" style="min-width:240px">
+        <select id="max-select" class="filelabel"><option value="10">10 ván</option><option value="20" selected>20 ván</option><option value="50">50 ván</option></select>
+        <button id="import-btn" onclick="startImport()">Kéo ván & phân tích</button>
+        <span id="import-status"></span>
+      </div>
+      <div class="progress" id="import-progress"><div id="import-bar"></div></div>
+    </div>
+    <div class="card" id="games-card"><p class="kv">Chưa có ván nào. Nhập tên và bấm "Kéo ván & phân tích" — mỗi ván ~30 giây, làm xong ván nào hiện ván đó.</p></div>
+  </div>
+
+  <!-- ===== Tab: Hồ sơ điểm yếu ===== -->
+  <div class="tabpane" id="tab-profile">
+    <div class="card" id="profile-card"><p class="kv">Hồ sơ được tính từ các ván đã phân tích trong tab "Ván của tôi".</p></div>
+  </div>
+
+  <!-- ===== Tab: Luyện tập ===== -->
+  <div class="tabpane" id="tab-puzzles">
+    <div class="card" id="puzzle-card"><p class="kv">Bài tập sinh từ chính lỗi trong ván của bạn. Phân tích vài ván trước đã.</p></div>
+  </div>
+
+  <!-- ===== Tab: Phân tích một ván ===== -->
+  <div class="tabpane active" id="tab-analyze">
   <div class="card">
     <textarea id="pgn-input" placeholder="Dán PGN vào đây...
 
@@ -130,6 +190,7 @@
       <div id="summarybody"></div>
     </div>
   </div>
+  </div>
 </div>
 
 <script>
@@ -155,7 +216,9 @@ $("file-input").addEventListener("change", ev => {
 });
 
 document.addEventListener("keydown", ev => {
-  if (ev.target.tagName === "TEXTAREA") return;
+  if (ev.target.tagName === "TEXTAREA" || ev.target.tagName === "INPUT") return;
+  if (currentTab === "puzzles") { if (ev.key === "f" || ev.key === "F") { puzzleFlipped = !puzzleFlipped; renderPuzzleBoard(); } return; }
+  if (currentTab !== "analyze") return;
   if (replay) {
     if (ev.key === "ArrowRight") replayStep(1);
     else if (ev.key === "ArrowLeft") replayStep(-1);
@@ -402,6 +465,222 @@ function renderSummary(summary) {
   if (motifParts.length) html += `<h3>Nên luyện</h3><p class="kv">${esc(motifParts.join(" · "))}</p>`;
   $("summarybody").innerHTML = html;
   $("summarycard").classList.remove("hidden");
+}
+
+/* ================= Tab ================= */
+let currentTab = "analyze";
+function showTab(name) {
+  currentTab = name;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".tabpane").forEach(p => p.classList.toggle("active", p.id === "tab-" + name));
+  if (name === "games") loadGames();
+  if (name === "profile") loadProfile();
+  if (name === "puzzles") loadPuzzle();
+}
+function currentUser() { return ($("user-input").value || localStorage.getItem("cxt_user") || "").trim(); }
+$("user-input").value = localStorage.getItem("cxt_user") || "";
+$("src-select").value = localStorage.getItem("cxt_src") || "chesscom";
+$("user-input").addEventListener("change", () => localStorage.setItem("cxt_user", $("user-input").value.trim()));
+$("src-select").addEventListener("change", () => localStorage.setItem("cxt_src", $("src-select").value));
+
+/* Mở một ván đã phân tích trong kho vào viewer */
+function openStoredGame(game) {
+  showTab("analyze");
+  reports = game.analysis || []; total = reports.length; position = 0; done = true; jobId = null;
+  initialFen = reports.length ? reports[0].fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  exitReplay(false);
+  flipped = game.user_color === "black";
+  $("results").style.display = "block";
+  $("progress").style.display = "none";
+  renderPlayers({ White: game.white, Black: game.black, Result: game.result, Date: game.date });
+  renderSummary(game.summary);
+  setStatus(`Ván ${game.white} vs ${game.black} (${game.date || ""})`);
+  go(1);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function openGameById(gameId, ply) {
+  const resp = await fetch(`/api/games/${encodeURIComponent(gameId)}`);
+  if (!resp.ok) return;
+  const game = await resp.json();
+  openStoredGame(game);
+  if (ply) go(ply);
+}
+
+/* ================= Ván của tôi ================= */
+let importJob = null;
+async function startImport() {
+  const username = $("user-input").value.trim();
+  if (!username) { $("import-status").textContent = "Nhập tên người chơi trước đã."; return; }
+  localStorage.setItem("cxt_user", username); localStorage.setItem("cxt_src", $("src-select").value);
+  $("import-btn").disabled = true;
+  $("import-status").textContent = "Đang kéo danh sách ván...";
+  $("import-progress").style.display = "block"; $("import-bar").style.width = "0";
+  const resp = await fetch("/api/import", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ source: $("src-select").value, username, max: $("max-select").value }) });
+  const data = await resp.json();
+  if (!resp.ok) { $("import-status").textContent = data.error || "Lỗi."; $("import-btn").disabled = false; return; }
+  importJob = data.job_id;
+  pollImport();
+}
+async function pollImport() {
+  const resp = await fetch(`/api/import/${importJob}`);
+  const job = await resp.json();
+  if (!resp.ok) { $("import-status").textContent = job.error || "Mất kết nối."; $("import-btn").disabled = false; return; }
+  const todo = job.total - job.skipped;
+  if (todo > 0) $("import-bar").style.width = (100 * job.analyzed / todo) + "%";
+  if (job.status === "running") {
+    $("import-status").textContent = job.total ? `Đang phân tích ${job.analyzed}/${todo} ván mới` + (job.skipped ? ` (${job.skipped} ván đã có)` : "") + (job.last_game ? ` — ${job.last_game}` : "") : "Đang kéo danh sách ván...";
+    if (job.analyzed > 0) loadGames();
+    setTimeout(pollImport, 1500);
+    return;
+  }
+  $("import-btn").disabled = false; $("import-progress").style.display = "none";
+  $("import-status").textContent = job.status === "error" ? (job.error_message || "Lỗi.") : (job.error_message || `Xong: ${job.analyzed} ván mới` + (job.skipped ? `, ${job.skipped} ván đã có từ trước.` : "."));
+  loadGames();
+}
+async function loadGames() {
+  const username = currentUser();
+  const resp = await fetch(`/api/games?username=${encodeURIComponent(username)}`);
+  const data = await resp.json();
+  const card = $("games-card");
+  if (!username || !data.games.length) {
+    let hint = '<p class="kv">Chưa có ván nào cho tên này. Nhập tên và bấm "Kéo ván & phân tích".</p>';
+    if (data.users && data.users.length) hint += '<p class="kv">Đã có dữ liệu cho: ' + data.users.map(u => `<span class="worst" onclick="$('user-input').value='${esc(u.username)}';$('src-select').value='${u.source}';loadGames()">${esc(u.username)} (${u.source})</span>`).join(", ") + "</p>";
+    card.innerHTML = hint; return;
+  }
+  let html = `<p class="kv">${data.games.length} ván của <b>${esc(username)}</b> — bấm vào ván để xem lại.</p><div style="overflow-x:auto"><table class="games"><tr><th>Ngày</th><th>Bạn cầm</th><th>Đối thủ</th><th>Kết quả</th><th>Chính xác</th><th>Lỗi</th><th>Khai cuộc</th></tr>`;
+  for (const g of data.games) {
+    const me = g.user_color === "white" ? "Trắng" : "Đen";
+    const opp = g.user_color === "white" ? g.black : g.white;
+    const s = g.summary ? g.summary[g.user_color] : null;
+    const acc = s ? Math.round(s.accuracy) + "%" : "-";
+    const errs = s ? [(s.counts.mistake || 0) + (s.counts.blunder || 0)] : ["-"];
+    const outcome = g.result === "1/2-1/2" ? "draw" : (g.result === "1-0") === (g.user_color === "white") ? "win" : "loss";
+    const outText = { win: "Thắng", loss: "Thua", draw: "Hoà" }[g.result === "*" ? "draw" : outcome];
+    html += `<tr class="row" onclick="openGameById('${esc(g.id)}')"><td>${esc(g.date)}</td><td>${me}</td><td>${esc(opp)}</td><td class="res-${outcome}">${outText}</td><td>${acc}</td><td>${errs[0]}</td><td>${esc((g.opening || "").slice(0, 32))}</td></tr>`;
+  }
+  card.innerHTML = html + "</table></div>";
+}
+
+/* ================= Hồ sơ điểm yếu ================= */
+async function loadProfile() {
+  const username = currentUser();
+  const card = $("profile-card");
+  if (!username) { card.innerHTML = '<p class="kv">Nhập tên ở tab "Ván của tôi" trước đã.</p>'; return; }
+  const resp = await fetch(`/api/profile?username=${encodeURIComponent(username)}`);
+  const p = await resp.json();
+  if (!p.games) { card.innerHTML = `<p class="kv">${esc((p.insights_vi || ["Chưa có dữ liệu."])[0])}</p>`; return; }
+  let html = `<h3 style="margin-top:0">${esc(username)} — ${p.games} ván, ${p.moves} nước của bạn</h3>`;
+  html += `<div class="sumgrid"><div class="sumbox"><h4>Độ chính xác</h4><div class="big">${Math.round(p.accuracy)}%</div><div class="kv">${p.trend !== null && p.trend !== undefined ? (p.trend >= 0 ? "▲ +" : "▼ ") + p.trend + " điểm gần đây" : "trung bình"}</div></div>`;
+  html += `<div class="sumbox"><h4>Kết quả</h4><div class="big">${p.results.win}-${p.results.draw}-${p.results.loss}</div><div class="kv">thắng-hoà-thua</div></div>`;
+  html += `<div class="sumbox"><h4>Sai lầm nghiêm trọng</h4><div class="big">${(p.quality_counts.blunder / p.games).toFixed(1)}</div><div class="kv">mỗi ván</div></div></div>`;
+  for (const line of p.insights_vi) html += `<div class="insight">${esc(line)}</div>`;
+  // Xu hướng
+  html += `<h3>Độ chính xác qua từng ván (bấm cột để mở ván)</h3><div class="spark">`;
+  for (const a of p.accuracy_history) html += `<div style="height:${Math.max(4, a.accuracy * 0.6)}px" title="${esc(a.date)} vs ${esc(a.opponent)}: ${a.accuracy}%" onclick="openGameById('${esc(a.game_id)}')"></div>`;
+  html += `</div>`;
+  // Giai đoạn
+  html += `<h3>Lỗi theo giai đoạn (trên 100 nước)</h3><div class="bars">`;
+  const maxRate = Math.max(1, ...p.phases.map(x => x.error_rate));
+  for (const ph of p.phases) html += `<div class="bar"><span class="name">${esc(ph.label_vi)}</span><div class="track"><div class="fill" style="width:${100 * ph.error_rate / maxRate}%"></div></div><span class="val">${ph.error_rate}% · ${ph.errors} lỗi</span></div>`;
+  html += `</div>`;
+  // Motif
+  if (p.motifs.length) {
+    html += `<h3>Đòn bạn hay để hở</h3><div class="bars">`;
+    const maxM = p.motifs[0].count;
+    for (const m of p.motifs) html += `<div class="bar"><span class="name">${esc(m.label_vi)}</span><div class="track"><div class="fill" style="width:${100 * m.count / maxM}%;background:var(--inaccuracy)"></div></div><span class="val">${m.count} lần</span></div>`;
+    html += `</div>`;
+  }
+  // Khai cuộc
+  if (p.openings.length) {
+    html += `<h3>Khai cuộc</h3><table class="games"><tr><th>Khai cuộc</th><th>Ván</th><th>Chính xác</th><th>Thường sai từ nước</th></tr>`;
+    for (const o of p.openings) html += `<tr><td>${esc(o.opening)}</td><td>${o.games}</td><td>${o.accuracy}%</td><td>${o.avg_first_error_move ?? "-"}</td></tr>`;
+    html += `</table>`;
+  }
+  if (p.worst_moves.length) {
+    html += `<h3>Những nước tệ nhất (bấm để xem lại)</h3><ul>`;
+    for (const w of p.worst_moves) html += `<li><span class="worst" onclick="openGameById('${esc(w.game_id)}', ${w.ply})">${esc(w.label)}</span> vs ${esc(w.opponent)} — ${esc(w.headline)}</li>`;
+    html += `</ul>`;
+  }
+  card.innerHTML = html;
+}
+
+/* ================= Luyện tập ================= */
+let puzzle = null, puzzleSel = null, puzzleFlipped = false, puzzleSolved = false, puzzleReplay = null;
+async function loadPuzzle() {
+  const username = currentUser();
+  const card = $("puzzle-card");
+  if (!username) { card.innerHTML = '<p class="kv">Nhập tên ở tab "Ván của tôi" trước đã.</p>'; return; }
+  const resp = await fetch(`/api/puzzles/next?username=${encodeURIComponent(username)}`);
+  const data = await resp.json();
+  if (!data.puzzle) { card.innerHTML = '<p class="kv">Chưa có bài tập nào — hãy phân tích thêm ván (bài tập sinh từ các sai lầm/blunder có đòn trừng phạt).</p>'; return; }
+  puzzle = data.puzzle; puzzleSel = null; puzzleSolved = false; puzzleReplay = null;
+  puzzleFlipped = puzzle.solver === "black";
+  renderPuzzle(data.stats);
+}
+function puzzleBoardUrl() {
+  const fen = puzzleReplay ? puzzleReplay.fen : puzzle.fen;
+  let url = `/board.svg?fen=${encodeURIComponent(fen)}&size=480&orientation=${puzzleFlipped ? "black" : "white"}`;
+  if (puzzleReplay && puzzleReplay.lastmove) url += `&lastmove=${puzzleReplay.lastmove}`;
+  if (!puzzleReplay && puzzleSel) url += `&selected=${puzzleSel}`;
+  return url;
+}
+function renderPuzzleBoard() { const img = $("pz-board"); if (img) img.src = puzzleBoardUrl(); }
+function renderPuzzle(stats, feedbackHtml = "") {
+  const who = puzzle.blunder_by === "you" ? "Bạn" : "Đối thủ";
+  const solverName = puzzle.solver === "white" ? "Trắng" : "Đen";
+  const statsHtml = stats ? `<span class="stat">Đến hạn: ${stats.due}</span><span class="stat">Tổng: ${stats.total}</span><span class="stat">Đã thuộc: ${stats.mastered}</span>` : "";
+  let html = `<div style="margin-bottom:10px">${statsHtml}${puzzle.is_due ? "" : '<span class="stat" style="color:var(--muted)">(chưa đến hạn — luyện thêm)</span>'}</div>`;
+  html += `<div class="layout"><div class="boardcol"><img id="pz-board" width="480" height="480" alt="Bài tập" src="${puzzleBoardUrl()}" onclick="puzzleClick(event)" style="cursor:pointer;border-radius:6px">
+    <div class="controls"><button class="ghost small" onclick="puzzleFlipped=!puzzleFlipped;renderPuzzleBoard()">Xoay bàn cờ</button><button class="ghost small" onclick="loadPuzzle()">Bài khác</button></div></div>`;
+  html += `<div class="infocol puzzlebox">`;
+  html += `<p class="qhead" style="color:var(--mistake)">${who} vừa đi ${esc(puzzle.blunder_san)} — một sai lầm.</p>`;
+  html += `<p><b>${solverName}</b> đi. Tìm đòn trừng phạt${puzzle.motif ? ` <span class="kv">(gợi ý: có ${esc(puzzle.motif)})</span>` : ""}.</p>`;
+  html += `<p class="kv">Bấm quân rồi bấm ô đích. Từ ván ${esc(puzzle.game_id.split(":")[1] || "")}, nước ${Math.ceil(puzzle.ply / 2)}.</p>`;
+  html += `<div id="pz-feedback">${feedbackHtml}</div></div></div>`;
+  $("puzzle-card").innerHTML = html;
+}
+function puzzleClick(ev) {
+  if (!puzzle || puzzleSolved || puzzleReplay) return;
+  const img = ev.currentTarget, rect = img.getBoundingClientRect();
+  const scale = 480 / rect.width, margin = 15, sq = 56.25;   // chess.svg: size 480 gồm lề 15px cho toạ độ
+  const x = (ev.clientX - rect.left) * scale - margin, y = (ev.clientY - rect.top) * scale - margin;
+  if (x < 0 || y < 0 || x >= sq * 8 || y >= sq * 8) return;
+  let file = Math.floor(x / sq), rank = 7 - Math.floor(y / sq);
+  if (puzzleFlipped) { file = 7 - file; rank = 7 - rank; }
+  const square = "abcdefgh"[file] + (rank + 1);
+  if (!puzzleSel) { puzzleSel = square; renderPuzzleBoard(); return; }
+  if (puzzleSel === square) { puzzleSel = null; renderPuzzleBoard(); return; }
+  submitPuzzle(puzzleSel + square);
+}
+async function submitPuzzle(uci) {
+  const resp = await fetch(`/api/puzzles/${puzzle.id}/answer`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ move: uci }) });
+  const data = await resp.json();
+  if (!resp.ok) {
+    // Có thể người dùng bấm quân khác: đổi lựa chọn thay vì báo lỗi.
+    puzzleSel = uci.slice(2, 4); renderPuzzleBoard(); return;
+  }
+  puzzleSolved = true; puzzleSel = null;
+  let fb = data.correct ? `<p class="verdict-ok">Chính xác! ${esc(data.note || "")}</p>` : `<p class="verdict-bad">Chưa đúng. Đáp án: ${esc(data.answer_san)}</p>`;
+  fb += `<p class="kv">Ôn lại sau ${data.schedule.next_in_days} ngày.</p>`;
+  fb += `<div class="actions"><button class="small" onclick="loadPuzzle()">Bài tiếp ▶</button><button class="ghost small" onclick="showPuzzleLine()">Xem đòn diễn ra</button></div>`;
+  puzzle._line = data.line;
+  renderPuzzle(data.stats, fb);
+}
+function showPuzzleLine() {
+  const line = puzzle._line || puzzle.line || [];
+  if (!line.length) return;
+  let idx = 0;
+  const step = () => {
+    const st = line[idx];
+    puzzleReplay = { fen: st.fen_after, lastmove: st.move_uci };
+    renderPuzzleBoard();
+    $("pz-feedback").innerHTML = `<div class="replay" style="margin-top:8px"><div class="steps">${line.map((l, i) => `<span class="step ${i === idx ? "current" : (i < idx ? "" : "future")}">${esc(l.label)}</span>`).join("")}</div><div class="note">${esc(cap(st.note || ""))}</div>
+      <div class="actions"><button class="ghost small" id="pz-prev">◀</button><button class="small" id="pz-next">▶</button><button class="ghost small" onclick="loadPuzzle()">Bài tiếp</button></div></div>`;
+    $("pz-prev").onclick = () => { if (idx > 0) { idx--; step(); } };
+    $("pz-next").onclick = () => { if (idx < line.length - 1) { idx++; step(); } };
+  };
+  step();
 }
 </script>
 </body>
