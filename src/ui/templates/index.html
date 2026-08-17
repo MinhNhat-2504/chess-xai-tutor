@@ -6,118 +6,154 @@
 <title>Chess XAI Tutor — Phân tích ván cờ</title>
 <style>
   :root {
-    --bg: #282c34; --panel: #343a45; --panel2: #3d4450; --text: #e4e4e4;
-    --muted: #a8aeb8; --accent: #5bc0de; --border: #4e5663;
-    --best: #5abe7a; --good: #5bc0de; --inaccuracy: #ebba49;
-    --mistake: #ed7e43; --blunder: #df4f4f;
+    --bg: #0f1216; --bg2: #14181e; --panel: #1a1f27; --panel2: #222832; --panel3: #2a313d;
+    --text: #e8eaee; --muted: #8b93a1; --dim: #5d6573; --border: #2b323d; --border2: #384150;
+    --accent: #4fd1c5; --accent2: #38b2ac; --accent-ink: #062a27;
+    --best: #5ccf8a; --good: #4fb3e8; --inaccuracy: #f0c04d; --mistake: #f28c48; --blunder: #ef5b5b;
+    --shadow: 0 10px 30px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.03) inset;
+    --radius: 14px; --radius-s: 9px;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 60px; }
-  h1 { font-size: 26px; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; }
-  textarea { width: 100%; min-height: 130px; background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; resize: vertical; }
-  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-  button { background: var(--accent); color: #16323c; border: 0; border-radius: 8px; padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; }
-  button:hover { filter: brightness(1.1); }
-  button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); font-weight: 400; }
-  button.small { padding: 6px 12px; font-size: 14px; }
-  button.punish { background: var(--mistake); color: #2b1a10; }
-  button.better { background: var(--best); color: #10301c; }
-  button:disabled { opacity: .45; cursor: default; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--text); font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+    background: radial-gradient(1200px 500px at 15% -10%, #16303a 0%, transparent 60%),
+                radial-gradient(900px 400px at 100% 0%, #1b2233 0%, transparent 55%), var(--bg);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 22px 20px 70px; }
+  /* Header */
+  .appbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(135deg, var(--accent), #2f8f88); display: grid; place-items: center; font-size: 22px; box-shadow: 0 6px 18px rgba(79,209,197,.25); }
+  .brand h1 { font-size: 21px; margin: 0; letter-spacing: -.2px; }
+  .brand .tag { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+  .tab { padding: 8px 15px; border-radius: 9px; cursor: pointer; font-size: 14px; color: var(--muted); user-select: none; transition: background .15s, color .15s; }
+  .tab:hover { color: var(--text); background: var(--panel2); }
+  .tab.active { background: var(--panel3); color: var(--text); font-weight: 600; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 2px 8px rgba(0,0,0,.25); }
+  .tabpane { display: none; } .tabpane.active { display: block; animation: fade .18s ease-out; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  /* Cards & controls */
+  .card { background: linear-gradient(180deg, rgba(255,255,255,.015), transparent 40%), var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
+  textarea, input[type=text], select.filelabel {
+    width: 100%; background: var(--bg2); color: var(--text); border: 1px solid var(--border2); border-radius: var(--radius-s);
+    padding: 10px 12px; font-size: 14px; outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 128px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 13px; resize: vertical; }
+  textarea:focus, input[type=text]:focus, select.filelabel:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,209,197,.15); }
+  input[type=text] { width: auto; } select.filelabel { width: auto; cursor: pointer; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  button { background: linear-gradient(180deg, var(--accent), var(--accent2)); color: var(--accent-ink); border: 0; border-radius: var(--radius-s); padding: 10px 18px; font-size: 14.5px; font-weight: 700; cursor: pointer; letter-spacing: .1px; box-shadow: 0 4px 14px rgba(79,209,197,.22); transition: transform .08s, filter .15s, box-shadow .15s; }
+  button:hover { filter: brightness(1.06); box-shadow: 0 6px 18px rgba(79,209,197,.3); }
+  button:active { transform: translateY(1px); }
+  button.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border2); font-weight: 500; box-shadow: none; }
+  button.ghost:hover { background: var(--panel3); }
+  button.small { padding: 7px 12px; font-size: 13.5px; }
+  button.punish { background: linear-gradient(180deg, #f39a5a, #e8793a); color: #2a1408; box-shadow: 0 4px 14px rgba(242,140,72,.25); }
+  button.better { background: linear-gradient(180deg, #6bdb98, #47bd77); color: #08301a; box-shadow: 0 4px 14px rgba(92,207,138,.25); }
+  button:disabled { opacity: .4; cursor: default; box-shadow: none; transform: none; }
   input[type=file] { display: none; }
-  .filelabel { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; cursor: pointer; font-size: 14px; }
-  #status { color: var(--muted); font-size: 14px; }
-  .progress { height: 6px; background: #23272e; border-radius: 3px; overflow: hidden; margin-top: 10px; display: none; }
-  .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+  .filelabel { background: var(--panel2); border: 1px solid var(--border2); border-radius: var(--radius-s); padding: 9px 14px; cursor: pointer; font-size: 14px; color: var(--text); }
+  label.filelabel:hover { background: var(--panel3); }
+  #status, #import-status { color: var(--muted); font-size: 13.5px; }
+  .progress { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-top: 12px; display: none; }
+  .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width .4s; }
   #results { display: none; }
-  .layout { display: flex; gap: 22px; flex-wrap: wrap; }
-  .boardcol { flex: 0 0 auto; }
-  .boardwrap { display: flex; gap: 8px; align-items: stretch; }
-  .infocol { flex: 1 1 320px; min-width: 300px; }
-  #board { border-radius: 6px; display: block; max-width: 100%; }
-  /* Thanh ưu thế kiểu Chess.com */
-  .evalbar { width: 26px; height: 480px; background: #403d39; border-radius: 4px; position: relative; overflow: hidden; }
-  .evalbar .white { position: absolute; left: 0; right: 0; bottom: 0; background: #f0f0f0; transition: height .35s; }
+  /* Board area */
+  .layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .boardcol { flex: 0 1 520px; min-width: 280px; }
+  .boardwrap { display: flex; gap: 10px; align-items: stretch; }
+  .infocol { flex: 1 1 320px; min-width: 280px; }
+  #board, #pz-board { display: block; width: 480px; max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+  .evalbar { width: 22px; align-self: stretch; background: #34383f; border-radius: 6px; position: relative; overflow: hidden; border: 1px solid #454a53; }
+  .evalbar .white { position: absolute; left: 0; right: 0; bottom: 0; background: #f2f2f2; transition: height .4s cubic-bezier(.4,0,.2,1); }
   .evalbar.flipped .white { bottom: auto; top: 0; }
-  .evalbar .label { position: absolute; left: 0; right: 0; text-align: center; font-size: 10px; font-weight: 700; }
-  .evalbar .label.bottom { bottom: 3px; } .evalbar .label.top { top: 3px; }
-  .controls { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; max-width: 520px; }
-  .chip { padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer; font-size: 13px; border: 1px solid transparent; color: var(--text); }
-  .chip.current { border-color: #fff; }
+  .evalbar .label { position: absolute; left: 0; right: 0; text-align: center; font-size: 9.5px; font-weight: 700; letter-spacing: -.2px; }
+  .evalbar .label.bottom { bottom: 4px; } .evalbar .label.top { top: 4px; }
+  .controls { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .movelist { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+  .chip { padding: 3px 8px; border-radius: 6px; background: var(--panel2); cursor: pointer; font-size: 13px; border: 1px solid transparent; color: var(--text); font-variant-numeric: tabular-nums; transition: background .12s; }
+  .chip:hover { background: var(--panel3); }
+  .chip.current { border-color: var(--text); }
   .chip.q-best { color: var(--best); } .chip.q-good { color: var(--good); }
-  .chip.q-inaccuracy { color: var(--inaccuracy); background: #4a4330; }
-  .chip.q-mistake { color: var(--mistake); background: #4c3a2d; }
-  .chip.q-blunder { color: var(--blunder); background: #4c2e2e; }
-  .qhead { font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+  .chip.q-inaccuracy { color: var(--inaccuracy); background: rgba(240,192,77,.13); }
+  .chip.q-mistake { color: var(--mistake); background: rgba(242,140,72,.14); }
+  .chip.q-blunder { color: var(--blunder); background: rgba(239,91,91,.15); }
+  /* Info panel */
+  .qhead { font-size: 22px; font-weight: 800; margin: 0 0 6px; letter-spacing: -.3px; }
   .kv { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
-  .headline { font-size: 17px; margin: 10px 0 4px; }
+  .headline { font-size: 17px; margin: 10px 0 4px; line-height: 1.5; }
   .facts { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
   .cands { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-  .cand { background: var(--panel2); border-radius: 6px; padding: 4px 10px; font-size: 14px; cursor: help; }
+  .cand { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 5px 11px; font-size: 14px; cursor: help; }
   .cand b { color: var(--best); }
-  h3 { font-size: 14px; color: var(--muted); margin: 18px 0 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
-  .players { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  h3 { font-size: 12px; color: var(--muted); margin: 20px 0 6px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; }
+  .players { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
   .hidden { display: none; }
   ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
-  /* Phát lại đòn */
-  .replay { border: 2px solid var(--mistake); border-radius: 10px; padding: 14px; background: #3a3232; }
-  .replay.better { border-color: var(--best); background: #2f3a33; }
+  /* Replay */
+  .replay { border: 1px solid rgba(242,140,72,.55); border-radius: var(--radius); padding: 16px; background: linear-gradient(180deg, rgba(242,140,72,.10), rgba(242,140,72,.03)); }
+  .replay.better { border-color: rgba(92,207,138,.55); background: linear-gradient(180deg, rgba(92,207,138,.10), rgba(92,207,138,.03)); }
   .replay h3 { margin: 0 0 8px; color: var(--text); font-size: 17px; text-transform: none; letter-spacing: 0; }
-  .replay .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-  .replay .step { padding: 4px 9px; border-radius: 6px; background: #23272e; font-size: 14px; cursor: pointer; border: 1px solid transparent; }
-  .replay .step.current { border-color: #fff; font-weight: 700; }
+  .replay .steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+  .replay .step { padding: 4px 9px; border-radius: 6px; background: var(--bg2); font-size: 14px; cursor: pointer; border: 1px solid transparent; font-variant-numeric: tabular-nums; }
+  .replay .step.current { border-color: var(--text); font-weight: 700; }
   .replay .step.future { opacity: .35; }
-  .replay .note { font-size: 17px; min-height: 52px; padding: 10px 12px; background: #23272e; border-radius: 8px; margin: 8px 0; }
+  .replay .note { font-size: 17px; min-height: 54px; padding: 12px 14px; background: var(--bg2); border-radius: 10px; margin: 8px 0; line-height: 1.5; }
   .replay .note b { color: var(--inaccuracy); }
   .replay .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
-  /* Tổng kết */
-  .sumgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .sumbox { background: var(--panel2); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
-  .sumbox h4 { margin: 0 0 4px; font-size: 15px; }
-  .big { font-size: 30px; font-weight: 700; }
-  .worst { cursor: pointer; text-decoration: underline dotted; }
-  /* Tab */
-  .tabs { display: flex; gap: 6px; margin: 0 0 18px; flex-wrap: wrap; }
-  .tab { padding: 9px 16px; border-radius: 8px; background: var(--panel2); border: 1px solid var(--border); cursor: pointer; font-size: 15px; color: var(--text); }
-  .tab.active { background: var(--accent); color: #16323c; border-color: var(--accent); font-weight: 600; }
-  .tabpane { display: none; } .tabpane.active { display: block; }
-  input[type=text], select.filelabel { background: #23272e; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 15px; }
-  /* Ván của tôi */
+  /* Summary / profile */
+  .sumgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .sumbox { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 14px; }
+  .sumbox h4 { margin: 0 0 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .big { font-size: 32px; font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+  .worst { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .worst:hover { color: var(--accent); }
   table.games { width: 100%; border-collapse: collapse; font-size: 14px; }
-  table.games th, table.games td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
-  table.games tr.row { cursor: pointer; } table.games tr.row:hover { background: var(--panel2); }
-  .res-win { color: var(--best); } .res-loss { color: var(--blunder); } .res-draw { color: var(--muted); }
-  /* Hồ sơ */
-  .insight { font-size: 16px; background: var(--panel2); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 6px; margin: 8px 0; }
-  .bars { display: flex; flex-direction: column; gap: 6px; }
+  table.games th { text-align: left; padding: 8px 10px; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border2); }
+  table.games td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  table.games tr.row { cursor: pointer; transition: background .12s; } table.games tr.row:hover { background: var(--panel2); }
+  .res-win { color: var(--best); font-weight: 600; } .res-loss { color: var(--blunder); font-weight: 600; } .res-draw { color: var(--muted); }
+  .insight { font-size: 15.5px; background: var(--panel2); border-left: 3px solid var(--accent); padding: 11px 14px; border-radius: 8px; margin: 8px 0; }
+  .bars { display: flex; flex-direction: column; gap: 8px; }
   .bar { display: flex; align-items: center; gap: 10px; font-size: 14px; }
   .bar .name { width: 130px; color: var(--muted); }
-  .bar .track { flex: 1; height: 12px; background: #23272e; border-radius: 6px; overflow: hidden; }
-  .bar .fill { height: 100%; background: var(--mistake); }
-  .bar .val { width: 120px; }
-  .spark { display: flex; align-items: flex-end; gap: 3px; height: 60px; margin: 6px 0; }
-  .spark div { width: 14px; background: var(--accent); border-radius: 2px 2px 0 0; cursor: pointer; }
-  /* Luyện tập */
+  .bar .track { flex: 1; height: 10px; background: var(--bg2); border-radius: 5px; overflow: hidden; }
+  .bar .fill { height: 100%; background: linear-gradient(90deg, #f28c48, #ef5b5b); border-radius: 5px; }
+  .bar .val { width: 120px; font-variant-numeric: tabular-nums; }
+  .spark { display: flex; align-items: flex-end; gap: 4px; height: 64px; margin: 6px 0; padding: 6px 8px; background: var(--bg2); border-radius: 10px; }
+  .spark div { width: 14px; background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 3px 3px 0 0; cursor: pointer; opacity: .85; transition: opacity .12s; }
+  .spark div:hover { opacity: 1; }
+  /* Puzzles */
   .puzzlebox { font-size: 16px; }
-  .verdict-ok { color: var(--best); font-weight: 700; font-size: 18px; }
-  .verdict-bad { color: var(--blunder); font-weight: 700; font-size: 18px; }
-  .stat { display: inline-block; background: var(--panel2); border-radius: 6px; padding: 4px 10px; margin-right: 6px; font-size: 14px; }
+  .verdict-ok { color: var(--best); font-weight: 800; font-size: 19px; margin: 6px 0; }
+  .verdict-bad { color: var(--blunder); font-weight: 800; font-size: 19px; margin: 6px 0; }
+  .stat { display: inline-block; background: var(--panel2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; margin-right: 6px; font-size: 13px; }
+  @media (max-width: 720px) {
+    .wrap { padding: 14px 12px 50px; }
+    .card { padding: 14px; border-radius: 12px; }
+    .brand h1 { font-size: 18px; } .brand .tag { display: none; }
+    .tabs { width: 100%; justify-content: space-between; } .tab { padding: 8px 10px; font-size: 13px; }
+    .qhead { font-size: 19px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Chess XAI Tutor</h1>
-  <p class="sub">Nhập tên Chess.com/Lichess để tự kéo ván, xem mình yếu gì và luyện đúng chỗ đó — hoặc dán một PGN bất kỳ.</p>
-
-  <div class="tabs">
-    <span class="tab active" data-tab="analyze" onclick="showTab('analyze')">Phân tích ván</span>
-    <span class="tab" data-tab="games" onclick="showTab('games')">Ván của tôi</span>
-    <span class="tab" data-tab="profile" onclick="showTab('profile')">Hồ sơ điểm yếu</span>
-    <span class="tab" data-tab="puzzles" onclick="showTab('puzzles')">Luyện tập</span>
+  <div class="appbar">
+    <div class="brand">
+      <div class="logo">♞</div>
+      <div><h1>Chess XAI Tutor</h1><p class="tag">Phân tích như Stockfish · giải thích bằng tiếng Việt · luyện đúng chỗ yếu</p></div>
+    </div>
+    <div class="tabs">
+      <span class="tab active" data-tab="analyze" onclick="showTab('analyze')">Phân tích ván</span>
+      <span class="tab" data-tab="games" onclick="showTab('games')">Ván của tôi</span>
+      <span class="tab" data-tab="profile" onclick="showTab('profile')">Hồ sơ điểm yếu</span>
+      <span class="tab" data-tab="puzzles" onclick="showTab('puzzles')">Luyện tập</span>
+    </div>
   </div>
 
   <!-- ===== Tab: Ván của tôi (nhập theo tên) ===== -->
@@ -173,7 +209,7 @@
         <div class="boardcol">
           <div class="boardwrap">
             <div class="evalbar" id="evalbar"><div class="white" id="evalwhite"></div><span class="label" id="evallabel"></span></div>
-            <img id="board" width="480" height="480" alt="Bàn cờ">
+            <img id="board" alt="Bàn cờ">
           </div>
           <div class="controls">
             <button class="ghost small" onclick="go(position-1)">◀</button>
@@ -631,7 +667,7 @@ function renderPuzzle(stats, feedbackHtml = "") {
   const solverName = puzzle.solver === "white" ? "Trắng" : "Đen";
   const statsHtml = stats ? `<span class="stat">Đến hạn: ${stats.due}</span><span class="stat">Tổng: ${stats.total}</span><span class="stat">Đã thuộc: ${stats.mastered}</span>` : "";
   let html = `<div style="margin-bottom:10px">${statsHtml}${puzzle.is_due ? "" : '<span class="stat" style="color:var(--muted)">(chưa đến hạn — luyện thêm)</span>'}</div>`;
-  html += `<div class="layout"><div class="boardcol"><img id="pz-board" width="480" height="480" alt="Bài tập" src="${puzzleBoardUrl()}" onclick="puzzleClick(event)" style="cursor:pointer;border-radius:6px">
+  html += `<div class="layout"><div class="boardcol"><img id="pz-board" alt="Bài tập" src="${puzzleBoardUrl()}" onclick="puzzleClick(event)" style="cursor:pointer;border-radius:6px">
     <div class="controls"><button class="ghost small" onclick="puzzleFlipped=!puzzleFlipped;renderPuzzleBoard()">Xoay bàn cờ</button><button class="ghost small" onclick="loadPuzzle()">Bài khác</button></div></div>`;
   html += `<div class="infocol puzzlebox">`;
   html += `<p class="qhead" style="color:var(--mistake)">${who} vừa đi ${esc(puzzle.blunder_san)} — một sai lầm.</p>`;
