@@ -152,7 +152,8 @@
   .actionrow { display: flex; gap: 8px; margin: 0 0 12px; }
   .actionrow button { flex: 1; padding: 10px 6px; font-size: 14px; }
   .actionrow button.next { background: linear-gradient(180deg, #7fb84a, #5e9a2f); color: #fff; box-shadow: 0 4px 12px rgba(94,154,47,.3); }
-  table.moves { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 4px 0 12px; }
+  .movebox { max-height: 190px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; margin: 4px 0 12px; scrollbar-width: thin; }
+  table.moves { width: 100%; border-collapse: collapse; font-size: 14.5px; }
   table.moves td { padding: 4px 6px; border-bottom: 1px solid var(--border); }
   table.moves td.num { width: 34px; color: var(--muted); font-variant-numeric: tabular-nums; }
   table.moves td.mv { cursor: pointer; border-radius: 6px; }
@@ -254,7 +255,7 @@
           <div id="coach"></div>
           <div id="actionrow"></div>
           <svg class="graph" id="graph" viewBox="0 0 400 76" preserveAspectRatio="none" onclick="graphClick(event)"></svg>
-          <table class="moves" id="movetable"></table>
+          <div class="movebox" id="movebox"><table class="moves" id="movetable"></table></div>
           <div id="summarybody"></div>
         </div>
         <div class="panel-nav">
@@ -488,8 +489,14 @@ function renderMoveList() {
     html += `<tr><td class="num">${w ? w.move_number : ""}.</td>${cell(w, i + 1)}${cell(b, i + 2)}</tr>`;
   }
   table.innerHTML = html;
-  const cur = table.querySelector("td.current");
-  if (cur) cur.scrollIntoView({ block: "nearest" });
+  // Chỉ cuộn bên trong khung danh sách nước — panel và bong bóng giải thích đứng yên.
+  const box = $("movebox"), cur = table.querySelector("td.current");
+  if (box && cur) {
+    const row = cur.parentElement;
+    const top = row.offsetTop, bottom = top + row.offsetHeight;
+    if (top < box.scrollTop) box.scrollTop = top;
+    else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
+  }
 }
 
 /* Biểu đồ ưu thế: đường cơ hội thắng của Trắng qua từng nước, chấm màu ở nước lỗi */
