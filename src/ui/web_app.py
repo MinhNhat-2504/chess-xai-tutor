@@ -198,6 +198,7 @@ def create_app(
     def analyze():
         text = request.form.get("pgn", "")
         upload = request.files.get("file")
+        mode = (request.form.get("mode") or "").strip()
         depth_override = request.form.get("depth", type=int)
         if upload is not None and not text.strip():
             text = upload.read(_MAX_PGN_BYTES + 1).decode("utf-8-sig", errors="replace")
@@ -224,10 +225,13 @@ def create_app(
             while len(_jobs) > _MAX_JOBS:
                 _jobs.popitem(last=False)
         job_kwargs = dict(explainer_kwargs)
-        if depth_override:
+        if mode == "deep":
+            job_kwargs["engine_depth"] = min(20, int(job_kwargs.get("engine_depth") or 12) + 4)
+            job_kwargs["engine_time_s"] = (job_kwargs.get("engine_time_s") or 1.0) * 3
+        elif depth_override:  # tương thích client cũ gửi depth cụ thể
             job_kwargs["engine_depth"] = max(8, min(20, depth_override))
             if job_kwargs["engine_depth"] >= 16:
-                job_kwargs["engine_time_s"] = 3.0  # phân tích kỹ: nới nắp thời gian
+                job_kwargs["engine_time_s"] = 3.0
         threading.Thread(
             target=_run_job,
             args=(job_id, game.headers.get("FEN"), moves, job_kwargs),

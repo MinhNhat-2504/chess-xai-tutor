@@ -194,8 +194,8 @@
       <button id="analyze-btn" onclick="startAnalyze()">Phân tích ván cờ</button>
       <label class="filelabel">Chọn file .pgn<input type="file" id="file-input" accept=".pgn,.txt"></label>
       <select id="depth-select" class="filelabel" title="Nhanh: đủ cho học cờ hằng ngày. Kỹ: chậm gấp ~3 lần, dùng cho ván quan trọng.">
-        <option value="12" selected>Nhanh</option>
-        <option value="16">Kỹ (chậm hơn)</option>
+        <option value="fast" selected>Nhanh</option>
+        <option value="deep">Kỹ (chậm hơn)</option>
       </select>
       <span id="status"></span>
     </div>
@@ -275,10 +275,10 @@ async function startAnalyze() {
   $("analyze-btn").disabled = true;
   setStatus("Đang gửi ván cờ...");
   try {
-    const resp = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ pgn: text, depth: $("depth-select").value }) });
+    const resp = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ pgn: text, mode: $("depth-select").value }) });
     const data = await resp.json();
     if (!resp.ok) { setStatus(data.error || "Có lỗi khi đọc PGN."); $("analyze-btn").disabled = false; return; }
-    jobId = data.job_id; total = data.total;
+    jobId = data.job_id; total = data.total; jobStart = Date.now();
     reports = []; position = 0; done = false; exitReplay(false);
     $("results").style.display = "block";
     $("summarycard").classList.add("hidden");
@@ -290,7 +290,13 @@ async function startAnalyze() {
   }
 }
 
-let pollFails = 0;
+let pollFails = 0, jobStart = 0;
+function etaText(doneCount, totalCount) {
+  if (!doneCount || doneCount >= totalCount) return "";
+  const rate = (Date.now() - jobStart) / doneCount;
+  const secs = Math.round(rate * (totalCount - doneCount) / 1000);
+  return secs >= 60 ? ` — còn khoảng ${Math.round(secs / 60)} phút` : ` — còn khoảng ${Math.max(5, secs)} giây`;
+}
 async function poll() {
   let resp, data;
   try {
@@ -321,7 +327,7 @@ async function poll() {
     setStatus("Phân tích dừng vì lỗi: " + (data.error_message || "?"));
     $("analyze-btn").disabled = false;
   } else {
-    setStatus(`Đang phân tích ${reports.length}/${total}...`);
+    setStatus(`Đang phân tích ${reports.length}/${total}` + etaText(reports.length, total));
     setTimeout(poll, 700);
   }
 }

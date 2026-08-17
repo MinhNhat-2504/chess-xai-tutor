@@ -254,19 +254,22 @@ class MoveExplainer:
         ]
         # PV của nước đã đi bắt đầu bằng chính nước đó; phần sau là cách đối
         # thủ đáp trả tốt nhất — với nước sai, đây chính là đòn trừng phạt.
+        # Chỉ diễn giải chi tiết (chú thích từng bước, motif đối thủ) khi nước
+        # đi thực sự là lỗi: nước tốt không cần và tiết kiệm đáng kể trên máy chủ yếu.
         board_after = board.copy(stack=False)
         board_after.push(candidate)
-        refutation_san = self._line_san(board_after, played["pv"][1:7])
+        is_error = best["score"] - played["score"] > 45
+        refutation_san = self._line_san(board_after, played["pv"][1:7]) if is_error else ""
         opponent_motifs = []
-        if len(played["pv"]) > 1:
+        if is_error and len(played["pv"]) > 1:
             opponent_motifs = detect_motifs(board_after, played["pv"][1])
         extras: dict[str, Any] = {
             "best_line_san": self._line_san(board, best["pv"][:8]),
-            "best_line": self._annotated_line(board, best["pv"][:8]),
+            "best_line": self._annotated_line(board, best["pv"][:8]) if is_error else [],
             "refutation_san": refutation_san,
             # Từng bước của đòn trừng phạt kèm chú thích (đòn đôi, ăn quân, chiếu...)
             # để UI phát lại trên bàn cờ cho người học xem đòn diễn ra thế nào.
-            "refutation_line": self._annotated_line(board_after, played["pv"][1:9]),
+            "refutation_line": self._annotated_line(board_after, played["pv"][1:9]) if is_error else [],
             "opponent_motifs": [m.to_dict() for m in opponent_motifs],
             "win_chance": _win_chance(played["score"]),
             "win_chance_best": _win_chance(best["score"]),
