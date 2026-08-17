@@ -13,3 +13,7 @@ services:
         value: "0.6"         # nắp thời gian mỗi lần tìm kiếm (giây)
       - key: XAI_MULTIPV
         value: "3"
+      - key: XAI_ENGINE_THREADS
+        value: "1"           # 0,1 vCPU: 1 luồng là đủ
+      - key: XAI_ENGINE_HASH
+        value: "32"          # RAM 512MB: bảng băm nhỏ để không bị giết vì thiếu bộ nhớ

@@ -166,6 +166,8 @@ def create_app(
     fallback_depth: int = 2,
     engine_time_s: float | None = 1.5,
     db_path: str | Path = "data/tutor.db",
+    engine_threads: int = 2,
+    engine_hash_mb: int = 128,
 ) -> Flask:
     app = Flask(__name__, template_folder=str(Path(__file__).parent / "templates"))
     explainer_kwargs = dict(
@@ -175,6 +177,8 @@ def create_app(
         engine_depth=engine_depth,
         multipv=multipv,
         engine_time_s=engine_time_s,
+        engine_threads=engine_threads,
+        engine_hash_mb=engine_hash_mb,
     )
     store = TutorStore(db_path)
     # Một oracle dùng chung (có khoá) để chấm nước người học đi trong bài tập.

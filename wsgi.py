@@ -7,6 +7,8 @@ thể ghi đè bằng biến môi trường để chỉnh theo sức máy chủ:
     XAI_ENGINE_DEPTH=12   # giảm độ sâu nếu CPU yếu
     XAI_MULTIPV=3
     XAI_ENGINE_TIME=1.0   # nắp thời gian mỗi lần tìm kiếm (giây)
+    XAI_ENGINE_THREADS=1  # số luồng Stockfish (máy chủ nhỏ để 1)
+    XAI_ENGINE_HASH=32    # MB bảng băm Stockfish (máy chủ 512MB để 32)
     XAI_USE_STOCKFISH=0   # tắt Stockfish (chỉ engine nội bộ)
 """
 from __future__ import annotations
@@ -41,4 +43,6 @@ app = create_app(
     multipv=int(os.environ.get("XAI_MULTIPV", _cfg.get("multipv", 3))),
     engine_time_s=float(os.environ.get("XAI_ENGINE_TIME", _cfg.get("engine_time_s", 1.0) or 0)) or None,
     db_path=os.environ.get("XAI_DB_PATH", str(ROOT / "data" / "tutor.db")),
+    engine_threads=int(os.environ.get("XAI_ENGINE_THREADS", 2)),
+    engine_hash_mb=int(os.environ.get("XAI_ENGINE_HASH", 128)),
 )

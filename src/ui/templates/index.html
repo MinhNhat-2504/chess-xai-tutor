@@ -290,9 +290,19 @@ async function startAnalyze() {
   }
 }
 
+let pollFails = 0;
 async function poll() {
-  const resp = await fetch(`/api/job/${jobId}?since=${reports.length}`);
-  const data = await resp.json();
+  let resp, data;
+  try {
+    resp = await fetch(`/api/job/${jobId}?since=${reports.length}`);
+    data = await resp.json();
+  } catch (err) { resp = null; }
+  if (!resp || (!resp.ok && resp.status >= 500)) {
+    // Máy chủ free đôi khi "nấc" (502) — thử lại vài lần trước khi bỏ cuộc.
+    if (++pollFails <= 6) { setStatus("Máy chủ đang bận, đang thử lại..."); setTimeout(poll, 2500); return; }
+    setStatus("Mất kết nối phiên phân tích — thử bấm Phân tích lại."); $("analyze-btn").disabled = false; return;
+  }
+  pollFails = 0;
   if (!resp.ok) { setStatus(data.error || "Mất kết nối phiên phân tích."); $("analyze-btn").disabled = false; return; }
   const hadNone = reports.length === 0;
   reports.push(...data.reports);
@@ -558,9 +568,15 @@ async function startImport() {
   importJob = data.job_id;
   pollImport();
 }
+let importFails = 0;
 async function pollImport() {
-  const resp = await fetch(`/api/import/${importJob}`);
-  const job = await resp.json();
+  let resp, job;
+  try { resp = await fetch(`/api/import/${importJob}`); job = await resp.json(); } catch (err) { resp = null; }
+  if (!resp || (!resp.ok && resp.status >= 500)) {
+    if (++importFails <= 6) { $("import-status").textContent = "Máy chủ đang bận, đang thử lại..."; setTimeout(pollImport, 3000); return; }
+    $("import-status").textContent = "Mất kết nối — bấm lại để tiếp tục (ván đã xong vẫn được giữ)."; $("import-btn").disabled = false; return;
+  }
+  importFails = 0;
   if (!resp.ok) { $("import-status").textContent = job.error || "Mất kết nối."; $("import-btn").disabled = false; return; }
   const todo = job.total - job.skipped;
   if (todo > 0) $("import-bar").style.width = (100 * job.analyzed / todo) + "%";

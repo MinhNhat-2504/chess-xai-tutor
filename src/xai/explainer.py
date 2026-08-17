@@ -90,6 +90,8 @@ class MoveExplainer:
         engine_depth: int = 12,
         multipv: int = 3,
         engine_time_s: float | None = 1.0,
+        engine_threads: int = 2,
+        engine_hash_mb: int = 128,
     ):
         self.depth = max(1, depth)
         self.use_quiescence = use_quiescence
@@ -99,7 +101,7 @@ class MoveExplainer:
             try:
                 self.oracle = StockfishOracle(
                     engine_path=engine_path, depth=engine_depth, multipv=multipv,
-                    time_limit_s=engine_time_s,
+                    time_limit_s=engine_time_s, threads=engine_threads, hash_mb=engine_hash_mb,
                 )
             except (FileNotFoundError, OSError, chess.engine.EngineError):
                 self.oracle = None  # im lặng rơi về engine nội bộ
