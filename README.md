@@ -1,13 +1,3 @@
----
-title: Chess XAI Tutor
-emoji: ♟️
-colorFrom: gray
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # Chess XAI Tutor — Phân tích ván cờ và giải thích bằng tiếng Việt
 
 Bạn thua một ván cờ và muốn biết **mình sai ở đâu, vì sao sai, và lần sau nên làm gì**?
@@ -103,7 +93,7 @@ python scripts/analyze_game.py duong-dan/van-co.pgn --output bao_cao.json
 
 Một ván 140 nửa nước phân tích hết ~50 giây ở chế độ mặc định (kết quả hiện dần từng nước); trên web có thể chọn "Kỹ" (depth 16) cho ván quan trọng. Tuỳ chọn CLI: `--engine-depth 16` (phân tích kỹ hơn), `--no-stockfish` (chỉ dùng engine nội bộ). Cấu hình mặc định nằm ở mục `xai` trong [config/config.yaml](config/config.yaml). Chi tiết đầy đủ: [docs/XAI.md](docs/XAI.md).
 
-**Đưa lên web công khai (miễn phí):** repo có sẵn `Dockerfile`; xem [docs/DEPLOY.md](docs/DEPLOY.md) để deploy lên Hugging Face Spaces / Render trong vài phút.
+**Đưa lên web công khai (miễn phí):** repo có sẵn `Dockerfile`; xem [docs/DEPLOY.md](docs/DEPLOY.md) để deploy lên Render (free) trong vài phút.
 
 ## Phần mềm hoạt động thế nào?
 

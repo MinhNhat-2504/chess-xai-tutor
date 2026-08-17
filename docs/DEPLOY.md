@@ -5,49 +5,41 @@ vụ host trang tĩnh (GitHub Pages, Netlify). Repo đã có sẵn `Dockerfile` 
 Stockfish bản Linux khi build), `wsgi.py` và `requirements-web.txt`; deploy
 được lên bất kỳ nơi nào chạy Docker. Dưới đây là cách miễn phí đơn giản nhất.
 
-## Cách 1 — Hugging Face Spaces (khuyên dùng, không cần thẻ)
+## Cách 1 — Render (miễn phí, không cần thẻ, khuyên dùng)
 
-Gói miễn phí: 2 vCPU, 16GB RAM, không hết hạn. Space "ngủ" sau 48 giờ không
-ai truy cập và tự dậy khi có người vào (mất ~30 giây lần đầu).
+> Lưu ý: từ 2026 Hugging Face Spaces yêu cầu gói trả phí cho Docker/Gradio
+> (chỉ Static Space còn miễn phí), nên không dùng được cho app này nữa.
 
-1. Tạo tài khoản tại <https://huggingface.co/join> — chọn **username** cẩn thận
-   vì nó nằm trong link web: `https://huggingface.co/spaces/<username>/<tên-space>`.
-2. Vào <https://huggingface.co/new-space>:
-   - **Space name**: ví dụ `chess-xai-tutor`
-   - **License**: MIT (hoặc để trống)
-   - **SDK**: chọn **Docker** → **Blank**
-   - **Space hardware**: CPU basic (Free)
-   - **Public** → bấm **Create Space**.
-3. Tạo access token để push: avatar → **Settings** → **Access Tokens** →
-   **Create new token**, quyền **Write**. Copy token (chỉ hiện một lần).
-4. Trên máy bạn, trong thư mục dự án:
+Gói free của Render: 512MB RAM, CPU yếu (0,1 nhân), ngủ sau 15 phút không ai
+dùng và tự dậy khi có người vào (~1 phút). Được gắn tên miền riêng miễn phí.
+Repo đã có `render.yaml` cấu hình sẵn (depth 10, nắp 0,6 giây để hợp CPU yếu).
 
-   ```bash
-   git remote add hf https://huggingface.co/spaces/<username>/chess-xai-tutor
-   git push hf main --force
-   ```
+1. Vào <https://render.com> → **Get Started** → đăng ký bằng **GitHub** (bấm
+   Authorize để Render thấy repo của bạn). Không cần thẻ.
+2. Trong Dashboard bấm **New +** → **Blueprint**.
+3. Chọn repo `chess-xai-tutor` (nếu chưa thấy, bấm *Configure account* để cấp
+   quyền cho repo đó) → Render đọc `render.yaml` → **Apply**.
+4. Chờ build ~5–8 phút (tải Stockfish + cài thư viện). Xem tiến trình ở tab
+   **Logs**; xong sẽ thấy **Live** và link dạng
+   `https://chess-xai-tutor-xxxx.onrender.com`.
 
-   Khi hỏi mật khẩu, dán **token** (không phải mật khẩu tài khoản).
-   Lần đầu HF build image ~3–5 phút (tải Stockfish + cài thư viện); theo dõi ở
-   tab **Logs** của Space. Xong sẽ thấy trạng thái **Running** và web ở
-   `https://<username>-chess-xai-tutor.hf.space`.
+Cập nhật sau này: cứ push lên GitHub, Render tự build lại (Auto-Deploy).
 
-Cấu hình Space nằm ở khối YAML đầu `README.md` (`sdk: docker`, `app_port: 7860`)
-— đừng xoá khối đó. Nếu CPU chậm, vào **Settings → Variables** thêm
-`XAI_ENGINE_DEPTH=10` để phân tích nhanh hơn (mặc định 12).
+Muốn tên miền riêng: **Settings → Custom Domains** trên Render, rồi trỏ CNAME
+ở nơi mua tên miền.
 
-Cập nhật web sau này: commit rồi `git push hf main`.
+## Cách 2 — Máy chủ Docker bất kỳ (VPS)
 
-## Cách 2 — Render (có tên miền riêng miễn phí, nhưng máy yếu hơn)
+Khi cần mạnh hơn/giữ dữ liệu lâu dài: VPS ~100–150k đồng/tháng (Hetzner,
+DigitalOcean, Vultr) chạy Docker:
 
-Gói free: 512MB RAM, ngủ sau 15 phút không dùng (dậy ~1 phút). Được gắn tên
-miền riêng miễn phí.
+```bash
+git clone https://github.com/MinhNhat-2504/chess-xai-tutor.git && cd chess-xai-tutor
+docker build -t chess-xai-tutor .
+docker run -d --restart unless-stopped -p 80:7860 -v $PWD/data:/app/data chess-xai-tutor
+```
 
-1. Đăng ký <https://render.com> bằng GitHub.
-2. **New → Web Service** → chọn repo `chess-xai-tutor` → Runtime **Docker**
-   → Instance type **Free** → **Create**.
-3. Render tự đọc `Dockerfile` và biến `PORT`. Nên thêm biến môi trường
-   `XAI_ENGINE_DEPTH=10` và `XAI_ENGINE_TIME=0.6` vì CPU gói free yếu.
+(`-v` giữ `data/tutor.db` ngoài container để không mất khi cập nhật.)
 
 ## Cách 3 — Chạy trên máy bạn, chia sẻ link tạm (demo cho bạn bè/thầy cô)
 
@@ -65,11 +57,11 @@ tắt cửa sổ là link hết hiệu lực.
 
 ## Tên miền
 
-- Link miễn phí kèm theo: `*.hf.space` (Hugging Face) hoặc `*.onrender.com`.
+- Link miễn phí kèm theo: `*.onrender.com`.
 - Sinh viên: **GitHub Student Developer Pack** (<https://education.github.com/pack>)
   tặng 1 năm tên miền `.me` (Namecheap) — miễn phí và hợp lệ.
 - Mua: `.xyz` vài chục nghìn đồng/năm đầu, `.com` ~250k/năm (Namecheap, Porkbun).
-  Gói free của Hugging Face không cho gắn tên miền riêng; Render thì có.
+  Render gói free cho gắn tên miền riêng.
 
 ## Chạy bằng Docker ở bất kỳ đâu
 
@@ -84,8 +76,8 @@ Biến môi trường hỗ trợ: `PORT`, `XAI_ENGINE_DEPTH`, `XAI_MULTIPV`,
 
 ## Dữ liệu người dùng (ván đã phân tích, bài tập)
 
-Lưu trong SQLite `data/tutor.db` (đổi bằng biến `XAI_DB_PATH`). Hugging Face
-Spaces và Render gói free **không giữ ổ đĩa** khi khởi động lại — dữ liệu sẽ
+Lưu trong SQLite `data/tutor.db` (đổi bằng biến `XAI_DB_PATH`). Render gói
+free **không giữ ổ đĩa** khi khởi động lại — dữ liệu sẽ
 mất; đủ cho demo, còn muốn giữ hồ sơ người dùng lâu dài thì cần VPS hoặc gói có
 persistent storage.
 

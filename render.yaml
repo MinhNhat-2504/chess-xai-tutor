@@ -1,0 +1,15 @@
+# Render Blueprint — deploy một phát: New -> Blueprint -> chọn repo này.
+# Gói free: 512MB RAM, CPU yếu, ngủ sau 15 phút không dùng (dậy ~1 phút).
+services:
+  - type: web
+    name: chess-xai-tutor
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: XAI_ENGINE_DEPTH
+        value: "10"          # CPU gói free yếu: giảm độ sâu cho nhanh
+      - key: XAI_ENGINE_TIME
+        value: "0.6"         # nắp thời gian mỗi lần tìm kiếm (giây)
+      - key: XAI_MULTIPV
+        value: "3"
