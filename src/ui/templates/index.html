@@ -573,18 +573,6 @@ function renderSummary(summary) {
     html += `<div class="cnt" style="color:var(--${q})">${cw[q] || 0}</div><div class="lab">${qicon(q)} ${label}</div><div class="cnt" style="color:var(--${q})">${cb[q] || 0}</div>`;
   }
   html += `</div>`;
-  const worst = summary.worst_moves || [];
-  if (worst.length) {
-    html += `<div class="section-title">Nên xem lại</div><ul style="margin-top:0">`;
-    for (const x of worst) html += `<li><span class="worst" onclick="go(${x.ply})">${esc(x.label)}</span> — ${esc(x.quality_vi)}, ${PHASE_VI[x.phase] || ""}</li>`;
-    html += `</ul>`;
-  }
-  const motifParts = [];
-  for (const side of ["white", "black"]) {
-    const m = (summary[side] || {}).allowed_motifs || {};
-    for (const k in m) motifParts.push(`${side === "white" ? "Trắng" : "Đen"} để hở ${MOTIF_VI[k] || k} ${m[k]} lần`);
-  }
-  if (motifParts.length) html += `<div class="section-title">Nên luyện</div><p class="kv">${esc(motifParts.join(" · "))}</p>`;
   $("summarybody").innerHTML = html;
 }
 
